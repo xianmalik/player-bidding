@@ -1,46 +1,108 @@
 import { useState } from 'react';
-import { addDoc, collection, getDocs } from 'firebase/firestore';
+import { addDoc, collection } from 'firebase/firestore';
+
+import { Card, Input, Select, Avatar, SelectItem, Checkbox, Button, ScrollShadow  } from "@nextui-org/react";
 
 import { db } from '../../firebase-config';
+import { rankList, posList } from '../../utils/const';
 
 export default function CreateUser () {
   const [name, setName] = useState('');
   const [ign, setIgn] = useState('');
   const [rank, setRank] = useState('');
+  const [rankPeak, setRankPeak] = useState('');
+  const [posPrimary, setPosPrimary] = useState('');
+  const [posSecondary, setPosSecondary] = useState('');
   const [isCaptain, setIsCaptain] = useState(false);
 
-  const playersCollectionRef = collection(db, 'players');
-
   const createPlayer = async () => {
-    await addDoc(playersCollectionRef, { ign, name, isCaptain, rank });
+    await addDoc(
+      collection(db, 'players'),
+      { ign, name, isCaptain, rank, rankPeak, posPrimary, posSecondary }
+    );
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = (e) => {
     try {
       createPlayer();
-    } catch {
-      console.log('error');
+    } catch(err) {
+      console.log('error', err);
     }
   }
-
+  
   return (
     <div className="App">
       <header className="App-header">
         Player Bidding
       </header>
       <div>
-        {name} / {ign} / {rank} / {`${isCaptain}`}
+        {name} / {ign} / {rank} / {rankPeak} / {posPrimary} / {posSecondary} / {`${isCaptain}`}
       </div>
       <div>
-        <form onSubmit={() => handleSubmit()}>
-          <input name="name" placeholder='Name' onChange={(e) => setName(e.target.value)} />
-          <input name="ign" placeholder='IGN' onChange={(e) => setIgn(e.target.value)}  />
-          <input name="rank" placeholder='Rank' onChange={(e) => setRank(e.target.value)}  />
-          <input type="checkbox" name="isCaptain" onChange={(e) => setIsCaptain(e.target.checked)}  />
-          <button type='submit'>
-            Submit
-          </button>
-        </form>
+        <Card className="p-4 max-w-screen-sm mx-auto">
+          <form onSubmit={(e) => {e.preventDefault(); handleSubmit()}} className="grid grid-cols-2 gap-3">
+            <Input size="sm" type="text" placeholder="Name" value={name} onValueChange={setName} />
+            <Input size="sm" type="text" placeholder="IGN" value={ign} onValueChange={setIgn} />
+            <Select size="sm" placeholder="Rank" value={rank} onChange={(e) => setRank(e.target.value)} className="capitalize">
+              {rankList.map(rank => (
+                <SelectItem key={rank.value} startContent={(
+                  <Avatar
+                    alt={rank.value}
+                    className="bg-transparent flex-shrink-0"
+                    size="sm"
+                    src={rank.img}
+                  />
+                )}>
+                  {rank.name}
+                </SelectItem>
+              ))}
+            </Select>
+            <Select size="sm" placeholder="Peak Rank" value={rankPeak} onChange={(e) => setRankPeak(e.target.value)} className="capitalize">
+               {rankList.map(rank => (
+                 <SelectItem key={rank.value} startContent={(
+                   <Avatar
+                     alt={rank.value}
+                     className="bg-transparent flex-shrink-0"
+                     size="sm"
+                     src={rank.img}
+                   />
+                 )}>
+                  {rank.name}
+                </SelectItem>
+                ))}
+            </Select>
+            <Select size="sm" placeholder="Primary Position" value={posPrimary} onChange={(e) => setPosPrimary(e.target.value)} className="capitalize">
+              {posList.map(pos => (
+                <SelectItem key={pos.value} startContent={(
+                  <Avatar
+                    alt={pos.value}
+                    className="bg-transparent flex-shrink-0"
+                    size="sm"
+                    src={pos.img}
+                  />
+                )}>
+                  {pos.name}
+                </SelectItem>
+                ))}
+            </Select>
+            <Select size="sm" placeholder="Secondary Position" value={posSecondary} onChange={(e) => setPosSecondary(e.target.value)} className="capitalize">
+              {posList.map(pos => (
+                <SelectItem key={pos.value} startContent={(
+                  <Avatar
+                    alt={pos.value}
+                    className="bg-transparent flex-shrink-0"
+                    size="sm"
+                    src={pos.img}
+                  />
+                )}>
+                  {pos.name}
+                </SelectItem>
+                ))}
+            </Select>
+            <Checkbox name="isCaptain" value={isCaptain} onValueChange={setIsCaptain}>Is captain?</Checkbox>
+            <Button type="submit" color="success" variant="shadow">Submit</Button>
+          </form>
+        </Card>
       </div>
     </div>
   );
