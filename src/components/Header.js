@@ -17,7 +17,7 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="bg-white shadow-md mb-4">
-    </header>
+    <></>
+//    <header className="bg-white shadow-md mb-4"></header>
   )
 }

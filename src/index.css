@@ -11,3 +11,22 @@ html, body {
 button {
     font-family: "Roboto Mono", sans-serif;
 }
+
+/* Custom scrollbar styles */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    @apply bg-gray-200/10;
+}
+
+::-webkit-scrollbar-thumb {
+    @apply bg-amber-500/75;
+    border-radius: 6px;
+    transition: all 0.3s ease-in-out;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    @apply bg-amber-600;
+}

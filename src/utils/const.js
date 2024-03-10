@@ -20,7 +20,10 @@ const posList = [
     {name: "Support", value: "sp", img: "/assets/img/pos/Support_icon.png"},
 ]
 
+const PATCH_NO = '14.5.1';
+
 export {
     rankList,
-    posList
+    posList,
+    PATCH_NO
 }
