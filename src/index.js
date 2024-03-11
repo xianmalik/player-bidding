@@ -22,12 +22,12 @@ import Draft from './pages/apps/Draft';
 import CreateUser from './pages/users/CreateUser';
 
 const router = createBrowserRouter([
-  {
+/**  {
     path: "/",
     element: <Landing />,
-  },
+  }, **/
   {
-    path: "/draft",
+    path: "/",
     element: <Draft />,
   },
   {
