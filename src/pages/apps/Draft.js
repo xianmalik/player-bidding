@@ -108,11 +108,13 @@ export default function Draft() {
                                 isPressable={![...selected.red, ...selected.blue, ...selected.redBan, ...selected.blueBan].includes(champion)}
                                 onPress={() => selectChamp(key)}>
                                 <CardBody className="text-amber-50 text-center p-0 overflow-visible">
-                                    <img
-                                        src={`https://ddragon.leagueoflegends.com/cdn/${PATCH_NO}/img/champion/${champion.id}.png`}
-                                        alt={champion.name}
-                                        className="mx-auto mb-2 group-hover:ring-2 group-hover:ring-amber-200 h-full w-full"
-                                    />
+                                    <picture>
+                                        <img
+                                            loading="lazy"
+                                            alt={champion.name}
+                                            src={`https://ddragon.leagueoflegends.com/cdn/${PATCH_NO}/img/champion/${champion.id}.png`}
+                                            className="mx-auto mb-2 group-hover:ring-2 group-hover:ring-amber-200 h-full w-full"/>
+                                    </picture>
                                     <p className="text-[10px] tracking-tight">{champion.name}</p>
                                 </CardBody>
                             </Card>
