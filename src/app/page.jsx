@@ -1,17 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { Input, Card, CardBody, Avatar } from '@nextui-org/react';
+'use client'
+
+import { useState, useEffect } from 'react';
+// import { CardBody } from '@nextui-org/react';
+
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+
 import axios from 'axios';
 
-import { PATCH_NO } from '../../utils/const';
+import { PATCH_NO } from '@/lib/const';
 
-function useForceUpdate(){
+function useForceUpdate() {
     const [value, setValue] = useState(0); // integer state
     return () => setValue(value => value + 1); // update state to force render
     // A function that increment 👆🏻 the previous state like here 
     // is better than directly setting `setValue(value + 1)`
 }
 
-export default function Draft() {
+export default function HomePage() {
     const forceUpdate = useForceUpdate();
     const [champions, setChampions] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -36,18 +45,18 @@ export default function Draft() {
 
         fetchChampions();
     }, []);
-    
-    const selectChamp = (key) => {
-        let newValue = selected;
-        newValue[currentSide][currentSelection] = champions.data[key];
-        setSelected(newValue);
-        forceUpdate();
-    }
-    
+
+    // const selectChamp = (key) => {
+    //     let newValue = selected;
+    //     newValue[currentSide][currentSelection] = champions.data[key];
+    //     setSelected(newValue);
+    //     forceUpdate();
+    // }
+
     return (
         <div className="flex flex-col items-center py-12 px-4 min-h-screen bg-gray-900">
             <div className="grid grid-cols-4 gap-8 max-w-screen-2xl">
-                <div className="h-full grid gap-0">
+                {/* <div className="h-full grid gap-0">
                     <div className="grid grid-cols-5 w-full gap-2">
                         {selected.blueBan.map((sel, index) => (
                             <Card
@@ -70,7 +79,7 @@ export default function Draft() {
                                 isPressable onPress={() => { setCurrentSide('blue'); setCurrentSelection(index); }}
                                 className={`max-h-[120px] ${(currentSide === 'blue' && index === currentSelection) && "bg-gradient-to-r from-amber-500/20 to-transparent"} max-w-full bg-transparent border-amber-200/50 border-y-2 py-1 px-4 flex items-center justify-center`}
                                 radius="none">
-                                <CardBody className="grid items-center">
+                                <div className="grid items-center">
                                     <div className="flex gap-5 w-full">
                                         <Avatar isBordered radius="full" size="lg" src={sel?.id ? `https://ddragon.leagueoflegends.com/cdn/${PATCH_NO}/img/champion/${sel?.id}.png` : "/avatars/avatar-1.png"} />
                                         <div className="flex flex-col gap-1 items-start justify-center">
@@ -78,9 +87,9 @@ export default function Draft() {
                                             <h5 className="text-small tracking-tight text-amber-400 opacity-50">TOP</h5>
                                         </div>
                                     </div>
-                                </CardBody>
-                            </Card> 
-                            ))}
+                                </div>
+                            </Card>
+                        ))}
                     </div>
                 </div>
                 <div className="col-span-2">
@@ -113,16 +122,16 @@ export default function Draft() {
                                             loading="lazy"
                                             alt={champion.name}
                                             src={`https://ddragon.leagueoflegends.com/cdn/${PATCH_NO}/img/champion/${champion.id}.png`}
-                                            className="mx-auto mb-2 group-hover:ring-2 group-hover:ring-amber-200 h-full w-full"/>
+                                            className="mx-auto mb-2 group-hover:ring-2 group-hover:ring-amber-200 h-full w-full" />
                                     </picture>
                                     <p className="text-[10px] tracking-tight">{champion.name}</p>
                                 </CardBody>
                             </Card>
                         ))}
                     </div>
-                </div>
+                </div> */}
                 <div className="h-full grid">
-                    <div className="grid grid-cols-5 w-full gap-2">
+                    {/* <div className="grid grid-cols-5 w-full gap-2">
                         {selected.redBan.map((sel, index) => (
                             <Card
                                 radius="none" shadow="none"
@@ -136,24 +145,27 @@ export default function Draft() {
                                     />
                                 </div>
                             </Card>
-                            ))}
-                    </div>
+                        ))}
+                    </div> */}
                     <div className="grid grid-rows grid-rows-5 gap-4">
                         {selected.red.map((sel, index) => (
-                            <Card
-                                isPressable onPress={() => { setCurrentSide('red'); setCurrentSelection(index); }}
-                                className={`max-h-[120px] ${(currentSide === 'red' && index === currentSelection) && "bg-gradient-to-l from-amber-500/20 to-transparent"} max-w-full bg-transparent border-amber-200/50 border-y-2 py-1 px-4 flex items-center justify-center`}
-                                radius="none">
-                                <CardBody className="grid items-center">
+                            <div
+                                key={index}
+                                onClick={() => { setCurrentSide('red'); setCurrentSelection(index); }}
+                                className={`max-h-[120px] ${(currentSide === 'red' && index === currentSelection) && "bg-gradient-to-l from-amber-500/20 to-transparent"} max-w-full bg-transparent border-amber-200/50 border-y-2 py-1 px-4 flex items-center justify-center`}>
+                                <div className="grid items-center">
                                     <div className="flex flex-row-reverse justify-content-end gap-5 w-full">
-                                        <Avatar isBordered radius="full" size="lg" src={sel?.id ? `https://ddragon.leagueoflegends.com/cdn/${PATCH_NO}/img/champion/${sel?.id}.png` : "/avatars/avatar-1.png"} />
+                                        <Avatar>
+                                            <AvatarImage src={`https://ddragon.leagueoflegends.com/cdn/${PATCH_NO}/img/champion/${sel?.id}.png`} />
+                                            <AvatarFallback>CN</AvatarFallback>
+                                        </Avatar>
                                         <div className="flex flex-col gap-1 items-end justify-center">
                                             <h4 className="font-semibold leading-none text-lg text-amber-400">{sel?.name || "...Picking"}</h4>
                                             <h5 className="text-small tracking-tight text-amber-400 opacity-50">TOP</h5>
                                         </div>
                                     </div>
-                                </CardBody>
-                            </Card>     
+                                </div>
+                            </div>
                         ))}
                     </div>
                 </div>
