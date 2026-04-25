@@ -74,14 +74,36 @@ export default function HomePage() {
         });
     }, [champions, currentSide, currentSelection, selected]);
 
-    const handleDragStart = (e, champKey) => {
-        e.dataTransfer.setData("champKey", champKey);
+    const handleRemove = (side, index) => {
+        setSelected(prev => {
+            const next = { ...prev, [side]: [...prev[side]] };
+            next[side][index] = null;
+            return next;
+        });
     };
 
-    const handleDrop = (e, side, index) => {
+    const handleDragStart = (e, payload) => {
+        e.dataTransfer.setData('payload', JSON.stringify(payload));
+    };
+
+    const handleDrop = (e, targetSide, targetIndex) => {
         e.preventDefault();
-        const champKey = e.dataTransfer.getData("champKey");
-        selectChamp(champKey, side, index);
+        let payload;
+        try { payload = JSON.parse(e.dataTransfer.getData('payload')); } catch { return; }
+
+        if (payload.type === 'champion') {
+            selectChamp(payload.champKey, targetSide, targetIndex);
+        } else if (payload.type === 'slot') {
+            const { side: srcSide, index: srcIndex } = payload;
+            if (srcSide === targetSide && srcIndex === targetIndex) return;
+            setSelected(prev => {
+                const next = { ...prev, [srcSide]: [...prev[srcSide]], [targetSide]: [...prev[targetSide]] };
+                // swap: put src into target, target into src
+                [next[targetSide][targetIndex], next[srcSide][srcIndex]] =
+                    [next[srcSide][srcIndex], next[targetSide][targetIndex]];
+                return next;
+            });
+        }
     };
 
     const filteredChampions = Object.entries(champions).filter(([_, champ]) => {
@@ -104,6 +126,8 @@ export default function HomePage() {
             <motion.div
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
+                draggable={!!data}
+                onDragStart={(e) => data && handleDragStart(e, { type: 'slot', side, index })}
                 onClick={() => { setCurrentSide(side); setCurrentSelection(index); }}
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => handleDrop(e, side, index)}
@@ -114,7 +138,7 @@ export default function HomePage() {
             >
                 {data ? (
                     <div className="relative w-full h-full">
-                        <motion.img 
+                        <motion.img
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             src={imageUrl}
@@ -126,6 +150,12 @@ export default function HomePage() {
                                 <p className="font-black text-lg text-white uppercase tracking-tighter italic drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">{data.name}</p>
                             </div>
                         )}
+                        <button
+                            onClick={(e) => { e.stopPropagation(); handleRemove(side, index); }}
+                            className="absolute top-1 right-1 p-0.5 rounded-full bg-black/60 text-white/50 hover:text-white hover:bg-red-600/80 opacity-0 group-hover:opacity-100 transition-all z-10"
+                        >
+                            <X size={12} />
+                        </button>
                     </div>
                 ) : (
                     <div className="flex items-center justify-center h-full text-white/10">
@@ -242,7 +272,7 @@ export default function HomePage() {
                                                 exit={{ opacity: 0, scale: 0.9 }}
                                                 key={champ.id}
                                                 draggable={!isUnavailable}
-                                                onDragStart={(e) => handleDragStart(e, key)}
+                                                onDragStart={(e) => handleDragStart(e, { type: 'champion', champKey: key })}
                                                 onClick={() => !isUnavailable && selectChamp(key)}
                                                 className={`relative group cursor-pointer aspect-square rounded-2xl overflow-hidden border-2 transition-all duration-500
                                                     ${isUnavailable ? 'cursor-not-allowed scale-95 border-transparent' : 'border-white/5 hover:border-amber-400/50 hover:shadow-[0_0_30px_rgba(251,191,36,0.2)] hover:-translate-y-1'}`}
