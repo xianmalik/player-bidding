@@ -18,16 +18,16 @@ import Footer from './components/Footer';
 import Landing from './pages/Landing';
 import Players from './pages/Players';
 import Bidding from './pages/Bidding';
-import Draft from './pages/apps/Draft';
+import Draft from './pages/Draft';
 import CreateUser from './pages/users/CreateUser';
 
 const router = createBrowserRouter([
-/**  {
-    path: "/",
-    element: <Landing />,
-  }, **/
   {
     path: "/",
+    element: <Landing />,
+  },
+  {
+    path: "/draft",
     element: <Draft />,
   },
   {
