@@ -113,7 +113,7 @@ export default function HomePage() {
                                 <p className="font-black text-xl text-white uppercase tracking-tighter italic drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">{data.name}</p>
                                 <div className="flex items-center gap-2">
                                     <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${isBlue ? 'bg-blue-400' : 'bg-red-400'}`} />
-                                    <p className="text-[10px] text-white/70 font-black uppercase tracking-[0.2em]">Confirmed</p>
+                                    <p className="text-[10px] text-white/70 font-black uppercase tracking-[0.2em]">Locked</p>
                                 </div>
                             </div>
                         )}
@@ -129,7 +129,7 @@ export default function HomePage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#020617] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-[#020617] to-black text-slate-200 p-8 pt-32">
+        <div className="min-h-screen bg-[#020617] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-[#020617] to-black text-slate-200 px-8 py-4">
             <div className="max-w-[1800px] mx-auto grid grid-cols-12 gap-10">
                 
                 {/* BLUE SIDE */}
@@ -144,12 +144,39 @@ export default function HomePage() {
                         </div>
                     </div>
                     
-                    <div className="grid grid-cols-5 gap-2">
-                        {[0,1,2,3,4].map(i => <Slot key={i} side="blueBan" index={i} type="ban" />)}
+                    {/* BANS SECTION */}
+                    <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-black text-blue-400/40 uppercase tracking-[0.3em]">Bans</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="grid grid-cols-3 gap-2">
+                                {[0,1,2].map(i => <Slot key={i} side="blueBan" index={i} type="ban" />)}
+                            </div>
+                            <div className="h-8 w-[1px] bg-blue-500/20 mx-1" />
+                            <div className="grid grid-cols-2 gap-2">
+                                {[3,4].map(i => <Slot key={i} side="blueBan" index={i} type="ban" />)}
+                            </div>
+                        </div>
                     </div>
 
+                    {/* PICKS SECTION */}
                     <div className="space-y-4">
-                        {[0,1,2,3,4].map(i => <Slot key={i} side="blue" index={i} />)}
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-black text-blue-400/40 uppercase tracking-[0.3em]">Picks - Phase 1</span>
+                        </div>
+                        {[0,1,2].map(i => <Slot key={i} side="blue" index={i} />)}
+                        
+                        <div className="relative py-2">
+                            <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                                <div className="w-full border-t border-blue-500/20"></div>
+                            </div>
+                            <div className="relative flex justify-start">
+                                <span className="bg-[#020617] pr-3 text-[10px] font-black text-blue-400/40 uppercase tracking-[0.3em]">Phase 2</span>
+                            </div>
+                        </div>
+
+                        {[3,4].map(i => <Slot key={i} side="blue" index={i} />)}
                     </div>
                 </div>
 
@@ -167,7 +194,7 @@ export default function HomePage() {
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 placeholder="Search Champions..."
-                                className="w-full h-16 bg-transparent border-none focus:ring-0 text-lg font-bold italic tracking-wider px-4 text-white placeholder:text-white/10"
+                                className="w-full h-16 bg-transparent border-none focus:ring-0 focus:outline-none text-lg font-bold tracking-wider px-4 text-white placeholder:text-white/10"
                             />
                             
                             <div className="flex items-center gap-2 pr-5">
@@ -196,10 +223,13 @@ export default function HomePage() {
                     <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 backdrop-blur-3xl relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
                         <ScrollArea className="h-[680px] pr-6">
-                            <div className="grid grid-cols-5 gap-4">
+                            <div className="grid grid-cols-6 gap-4">
                                 <AnimatePresence mode='popLayout'>
                                     {filteredChampions.map(([key, champ]) => {
-                                        const isSelected = Object.values(selected).flat().some(s => s?.id === champ.id);
+                                        const isBanned = [...selected.blueBan, ...selected.redBan].some(s => s?.id === champ.id);
+                                        const isPicked = [...selected.blue, ...selected.red].some(s => s?.id === champ.id);
+                                        const isUnavailable = isBanned || isPicked;
+
                                         return (
                                             <motion.div
                                                 layout
@@ -207,17 +237,29 @@ export default function HomePage() {
                                                 animate={{ opacity: 1, scale: 1 }}
                                                 exit={{ opacity: 0, scale: 0.9 }}
                                                 key={champ.id}
-                                                draggable={!isSelected}
+                                                draggable={!isUnavailable}
                                                 onDragStart={(e) => handleDragStart(e, key)}
-                                                onClick={() => !isSelected && selectChamp(key)}
+                                                onClick={() => !isUnavailable && selectChamp(key)}
                                                 className={`relative group cursor-pointer aspect-square rounded-2xl overflow-hidden border-2 transition-all duration-500
-                                                    ${isSelected ? 'opacity-20 grayscale border-transparent cursor-not-allowed scale-95' : 'border-white/5 hover:border-amber-400/50 hover:shadow-[0_0_30px_rgba(251,191,36,0.2)] hover:-translate-y-1'}`}
+                                                    ${isUnavailable ? 'cursor-not-allowed scale-95 border-transparent' : 'border-white/5 hover:border-amber-400/50 hover:shadow-[0_0_30px_rgba(251,191,36,0.2)] hover:-translate-y-1'}`}
                                             >
                                                 <img 
                                                     src={`https://ddragon.leagueoflegends.com/cdn/${PATCH_NO}/img/champion/${champ.id}.png`}
-                                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                                    className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${isUnavailable ? 'grayscale opacity-30' : ''}`}
                                                     alt={champ.name}
                                                 />
+                                                
+                                                {isBanned && (
+                                                    <div className="absolute inset-0 flex items-center justify-center bg-red-900/40 backdrop-grayscale-[0.5]">
+                                                        <motion.div
+                                                            initial={{ scale: 0.5, opacity: 0 }}
+                                                            animate={{ scale: 1, opacity: 1 }}
+                                                        >
+                                                            <Ban className="text-red-500 w-12 h-12 stroke-[3px] drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]" />
+                                                        </motion.div>
+                                                    </div>
+                                                )}
+
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2 text-center">
                                                     <p className="text-[10px] font-black text-white italic tracking-widest w-full uppercase">{champ.name}</p>
                                                 </div>
@@ -242,12 +284,39 @@ export default function HomePage() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-5 gap-2 justify-items-end">
-                        {[0,1,2,3,4].map(i => <Slot key={i} side="redBan" index={i} type="ban" />)}
+                    {/* BANS SECTION */}
+                    <div className="space-y-2">
+                        <div className="flex items-center justify-end gap-2">
+                            <span className="text-[10px] font-black text-red-400/40 uppercase tracking-[0.3em]">Bans</span>
+                        </div>
+                        <div className="flex items-center justify-end gap-2">
+                            <div className="grid grid-cols-2 gap-2">
+                                {[3,4].map(i => <Slot key={i} side="redBan" index={i} type="ban" />)}
+                            </div>
+                            <div className="h-8 w-[1px] bg-red-500/20 mx-1" />
+                            <div className="grid grid-cols-3 gap-2">
+                                {[0,1,2].map(i => <Slot key={i} side="redBan" index={i} type="ban" />)}
+                            </div>
+                        </div>
                     </div>
 
+                    {/* PICKS SECTION */}
                     <div className="space-y-4">
-                        {[0,1,2,3,4].map(i => <Slot key={i} side="red" index={i} />)}
+                        <div className="flex items-center justify-end gap-2">
+                            <span className="text-[10px] font-black text-red-400/40 uppercase tracking-[0.3em]">Picks - Phase 1</span>
+                        </div>
+                        {[0,1,2].map(i => <Slot key={i} side="red" index={i} />)}
+                        
+                        <div className="relative py-2">
+                            <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                                <div className="w-full border-t border-red-500/20"></div>
+                            </div>
+                            <div className="relative flex justify-end">
+                                <span className="bg-[#020617] pl-3 text-[10px] font-black text-red-400/40 uppercase tracking-[0.3em]">Phase 2</span>
+                            </div>
+                        </div>
+
+                        {[3,4].map(i => <Slot key={i} side="red" index={i} />)}
                     </div>
                 </div>
 
