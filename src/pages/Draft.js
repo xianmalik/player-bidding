@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Card } from "@/components/ui/card"
-import { Search, Ban, Shield, Swords, X, Command, Check } from 'lucide-react';
+import { Search, Ban, Shield, Swords, X, Command, Check, LayoutGrid, Sword, Trees, Zap, Target, Heart } from 'lucide-react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PATCH_NO } from '@/lib/const';
@@ -13,9 +13,27 @@ import { PATCH_NO } from '@/lib/const';
 export default function HomePage() {
     const [champions, setChampions] = useState({});
     const [searchTerm, setSearchTerm] = useState('');
+    const [activeRole, setActiveRole] = useState('All');
     const [currentSide, setCurrentSide] = useState('blue');
     const [currentSelection, setCurrentSelection] = useState(0);
     const searchInputRef = useRef(null);
+
+    const roles = [
+        { name: 'All', icon: LayoutGrid },
+        { name: 'Top', icon: Sword },
+        { name: 'Jungle', icon: Trees },
+        { name: 'Mid', icon: Zap },
+        { name: 'ADC', icon: Target },
+        { name: 'Support', icon: Heart }
+    ];
+
+    const roleMapping = {
+        'Top': ['Fighter', 'Tank'],
+        'Jungle': ['Fighter', 'Tank', 'Assassin'],
+        'Mid': ['Mage', 'Assassin'],
+        'ADC': ['Marksman'],
+        'Support': ['Support', 'Tank', 'Mage']
+    };
 
     const [selected, setSelected] = useState({
         blueBan: Array(5).fill(null),
@@ -71,9 +89,11 @@ export default function HomePage() {
         selectChamp(champKey, side, index);
     };
 
-    const filteredChampions = Object.entries(champions).filter(([_, champ]) => 
-        champ.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredChampions = Object.entries(champions).filter(([_, champ]) => {
+        const matchesSearch = champ.name.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesRole = activeRole === 'All' || champ.tags.some(tag => roleMapping[activeRole]?.includes(tag));
+        return matchesSearch && matchesRole;
+    });
 
     const Slot = ({ side, index, type = 'pick' }) => {
         const isBan = type === 'ban';
@@ -165,41 +185,64 @@ export default function HomePage() {
                 {/* CHAMPION SELECTION */}
                 <div className="col-span-6 space-y-8">
                     {/* Modern Search Bar */}
-                    <div className="relative group max-w-2xl mx-auto w-full">
-                        <div className="absolute -inset-1 bg-gradient-to-r from-blue-600/20 via-amber-500/20 to-red-600/20 rounded-2xl blur opacity-25 group-focus-within:opacity-100 transition-all duration-500" />
-                        <div className="relative flex items-center bg-white/5 backdrop-blur-3xl border border-white/10 rounded-2xl overflow-hidden group-focus-within:border-white/20 transition-all">
-                            <div className="pl-5 text-white/20 group-focus-within:text-amber-400 transition-colors">
-                                <Search size={22} />
-                            </div>
-                            <input 
-                                ref={searchInputRef}
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                placeholder="Search Champions..."
-                                className="w-full h-16 bg-transparent border-none focus:ring-0 focus:outline-none text-lg font-bold tracking-wider px-4 text-white placeholder:text-white/10"
-                            />
-                            
-                            <div className="flex items-center gap-2 pr-5">
-                                <AnimatePresence>
-                                    {searchTerm && (
-                                        <motion.button
-                                            initial={{ opacity: 0, scale: 0.8 }}
-                                            animate={{ opacity: 1, scale: 1 }}
-                                            exit={{ opacity: 0, scale: 0.8 }}
-                                            onClick={() => setSearchTerm('')}
-                                            className="p-1 hover:bg-white/10 rounded-md text-white/40 hover:text-white transition-colors"
-                                        >
-                                            <X size={18} />
-                                        </motion.button>
-                                    )}
-                                </AnimatePresence>
-                                <div className="h-6 w-[1px] bg-white/10" />
-                                <div className="flex items-center gap-1 bg-white/5 px-2 py-1 rounded border border-white/5 text-[10px] font-black text-white/30 tracking-tighter">
-                                    <Command size={10} />
-                                    <span>K</span>
+                    <div className="flex items-center gap-4 max-w-4xl mx-auto w-full">
+                        <div className="relative group flex-1">
+                            <div className="absolute -inset-1 bg-gradient-to-r from-blue-600/20 via-amber-500/20 to-red-600/20 rounded-xl blur opacity-25 group-focus-within:opacity-100 transition-all duration-500" />
+                            <div className="relative flex items-center bg-white/5 backdrop-blur-3xl border border-white/10 rounded-xl overflow-hidden group-focus-within:border-white/20 transition-all">
+                                <div className="pl-4 text-white/20 group-focus-within:text-amber-400 transition-colors">
+                                    <Search size={18} />
+                                </div>
+                                <input 
+                                    ref={searchInputRef}
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    placeholder="Search Champions..."
+                                    className="w-full h-12 bg-transparent border-none focus:ring-0 focus:outline-none text-base font-bold tracking-wider px-3 text-white placeholder:text-white/10"
+                                />
+                                
+                                <div className="flex items-center gap-2 pr-4">
+                                    <AnimatePresence>
+                                        {searchTerm && (
+                                            <motion.button
+                                                initial={{ opacity: 0, scale: 0.8 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                exit={{ opacity: 0, scale: 0.8 }}
+                                                onClick={() => setSearchTerm('')}
+                                                className="p-1 hover:bg-white/10 rounded-md text-white/40 hover:text-white transition-colors"
+                                            >
+                                                <X size={14} />
+                                            </motion.button>
+                                        )}
+                                    </AnimatePresence>
+                                    <div className="h-5 w-[1px] bg-white/10" />
+                                    <div className="flex items-center gap-1 bg-white/5 px-2 py-0.5 rounded border border-white/5 text-[9px] font-black text-white/30 tracking-tighter">
+                                        <Command size={9} />
+                                        <span>K</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+
+                        {/* Role Filters - Commented out for now
+                        <div className="flex items-center bg-white/5 backdrop-blur-3xl border border-white/10 rounded-xl p-1 gap-1">
+                            {roles.map(role => (
+                                <button
+                                    key={role.name}
+                                    onClick={() => setActiveRole(role.name)}
+                                    title={role.name}
+                                    className={`p-2.5 rounded-lg transition-all duration-300 group/role relative
+                                        ${activeRole === role.name 
+                                            ? 'bg-amber-500 text-black shadow-[0_0_15px_rgba(245,158,11,0.3)]' 
+                                            : 'text-white/40 hover:text-white hover:bg-white/5'}`}
+                                >
+                                    <role.icon size={18} />
+                                    <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black/90 text-white text-[10px] font-black px-2 py-1 rounded border border-white/10 opacity-0 group-hover/role:opacity-100 transition-opacity pointer-events-none uppercase tracking-widest whitespace-nowrap">
+                                        {role.name}
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
+                        */}
                     </div>
 
                     <div className="bg-white/5 border border-white/10 rounded-2xl backdrop-blur-3xl relative overflow-hidden">
