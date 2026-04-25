@@ -1,36 +1,25 @@
 'use client'
 
 import { useState, useEffect } from 'react';
-// import { CardBody } from '@nextui-org/react';
 
 import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 import axios from 'axios';
 
 import { PATCH_NO } from '@/lib/const';
 
-function useForceUpdate() {
-    const [value, setValue] = useState(0); // integer state
-    return () => setValue(value => value + 1); // update state to force render
-    // A function that increment 👆🏻 the previous state like here 
-    // is better than directly setting `setValue(value + 1)`
-}
-
 export default function HomePage() {
-    const forceUpdate = useForceUpdate();
     const [champions, setChampions] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [currentSide, setCurrentSide] = useState('blue');
-    const [currentSelection, setCurrentSelection] = useState({});
+    const [draggedChamp, setDraggedChamp] = useState(null);
+    const [dragOverSlot, setDragOverSlot] = useState(null);
     const [selected, setSelected] = useState({
-        blueBan: Array.from({ length: 5 }),
-        redBan: Array.from({ length: 5 }),
-        blue: Array.from({ length: 5 }),
-        red: Array.from({ length: 5 })
+        blueBan: Array.from({ length: 5 }, () => null),
+        redBan: Array.from({ length: 5 }, () => null),
+        blue: Array.from({ length: 5 }, () => null),
+        red: Array.from({ length: 5 }, () => null)
     });
 
     useEffect(() => {
@@ -46,130 +35,208 @@ export default function HomePage() {
         fetchChampions();
     }, []);
 
-    // const selectChamp = (key) => {
-    //     let newValue = selected;
-    //     newValue[currentSide][currentSelection] = champions.data[key];
-    //     setSelected(newValue);
-    //     forceUpdate();
-    // }
+    const allSelected = [
+        ...selected.blue,
+        ...selected.red,
+        ...selected.blueBan,
+        ...selected.redBan
+    ].filter(Boolean);
 
-    return (
-        <div className="flex flex-col items-center py-12 px-4 min-h-screen bg-gray-900">
-            <div className="grid grid-cols-4 gap-8 max-w-screen-2xl">
-                {/* <div className="h-full grid gap-0">
-                    <div className="grid grid-cols-5 w-full gap-2">
-                        {selected.blueBan.map((sel, index) => (
-                            <Card
-                                radius="none" shadow="none"
-                                className="overflow-visible p-0 m-0 bg-transparent"
-                                isPressable onPress={() => { setCurrentSide('blueBan'); setCurrentSelection(index); }}>
-                                <div className={(currentSide === 'blueBan' && index === currentSelection) ? "ring-2 ring-red-500" : "opacity-75"}>
-                                    <Avatar
-                                        showFallback
-                                        radius="none" size="lg"
-                                        src={sel?.id ? `https://ddragon.leagueoflegends.com/cdn/${PATCH_NO}/img/champion/${sel?.id || 'u'}.png` : "/avatars/avatar-1.png"}
-                                    />
-                                </div>
-                            </Card>
-                        ))}
-                    </div>
-                    <div className="grid grid-rows grid-rows-5 gap-4">
-                        {selected.blue.map((sel, index) => (
-                            <Card
-                                isPressable onPress={() => { setCurrentSide('blue'); setCurrentSelection(index); }}
-                                className={`max-h-[120px] ${(currentSide === 'blue' && index === currentSelection) && "bg-gradient-to-r from-amber-500/20 to-transparent"} max-w-full bg-transparent border-amber-200/50 border-y-2 py-1 px-4 flex items-center justify-center`}
-                                radius="none">
-                                <div className="grid items-center">
-                                    <div className="flex gap-5 w-full">
-                                        <Avatar isBordered radius="full" size="lg" src={sel?.id ? `https://ddragon.leagueoflegends.com/cdn/${PATCH_NO}/img/champion/${sel?.id}.png` : "/avatars/avatar-1.png"} />
-                                        <div className="flex flex-col gap-1 items-start justify-center">
-                                            <h4 className="font-semibold leading-none text-lg text-amber-400">{sel?.name || "Picking..."}</h4>
-                                            <h5 className="text-small tracking-tight text-amber-400 opacity-50">TOP</h5>
-                                        </div>
-                                    </div>
-                                </div>
-                            </Card>
-                        ))}
-                    </div>
-                </div>
-                <div className="col-span-2">
-                    <div className="w-full">
-                        <Input
-                            radius="none"
-                            size="md"
-                            type="text"
-                            placeholder="Search..."
-                            className="mb-4 bg-transparent text-white"
-                            classNames={{
-                                inputWrapper: [
-                                    "!bg-gray-700 hover:ring-2 focus:ring-2 ring-amber-200 acive:ring-2",
-                                ],
-                            }}
-                            onValueChange={(value) => setSearchTerm(value)}
-                        />
-                    </div>
-                    <div className="grid grid-cols-8 bg-gray-700 items-start justify-start p-2 min-w-full h-[536px] overflow-y-scroll">
-                        {champions.data && Object.entries(champions.data).filter(([key, value]) => key.toLowerCase().includes(searchTerm.toLowerCase())).map(([key, champion]) => (
-                            <Card
-                                shadow="none" radius="none" key={champion.key}
-                                className={`overflow-visible group bg-transparent p-2 ${[...selected.red, ...selected.blue, ...selected.redBan, ...selected.blueBan].includes(champion) && 'opacity-50 grayscale-0'}`}
-                                isDisabled={!![...selected.red, ...selected.blue, ...selected.redBan, ...selected.blueBan].includes(champion)}
-                                isPressable={![...selected.red, ...selected.blue, ...selected.redBan, ...selected.blueBan].includes(champion)}
-                                onPress={() => selectChamp(key)}>
-                                <CardBody className="text-amber-50 text-center p-0 overflow-visible">
-                                    <picture>
-                                        <img
-                                            loading="lazy"
-                                            alt={champion.name}
-                                            src={`https://ddragon.leagueoflegends.com/cdn/${PATCH_NO}/img/champion/${champion.id}.png`}
-                                            className="mx-auto mb-2 group-hover:ring-2 group-hover:ring-amber-200 h-full w-full" />
-                                    </picture>
-                                    <p className="text-[10px] tracking-tight">{champion.name}</p>
-                                </CardBody>
-                            </Card>
-                        ))}
-                    </div>
-                </div> */}
-                <div className="h-full grid">
-                    {/* <div className="grid grid-cols-5 w-full gap-2">
-                        {selected.redBan.map((sel, index) => (
-                            <Card
-                                radius="none" shadow="none"
-                                className="overflow-visible p-0 m-0 bg-transparent"
-                                isPressable onPress={() => { setCurrentSide('redBan'); setCurrentSelection(index); }}>
-                                <div className={(currentSide === 'redBan' && index === currentSelection) ? "ring-2 ring-red-500" : "opacity-75"}>
-                                    <Avatar
-                                        showFallback
-                                        radius="none" size="lg"
-                                        src={sel?.id ? `https://ddragon.leagueoflegends.com/cdn/${PATCH_NO}/img/champion/${sel?.id || 'u'}.png` : "/avatars/avatar-1.png"}
-                                    />
-                                </div>
-                            </Card>
-                        ))}
-                    </div> */}
-                    <div className="grid grid-rows grid-rows-5 gap-4">
-                        {selected.red.map((sel, index) => (
-                            <div
-                                key={index}
-                                onClick={() => { setCurrentSide('red'); setCurrentSelection(index); }}
-                                className={`max-h-[120px] ${(currentSide === 'red' && index === currentSelection) && "bg-gradient-to-l from-amber-500/20 to-transparent"} max-w-full bg-transparent border-amber-200/50 border-y-2 py-1 px-4 flex items-center justify-center`}>
-                                <div className="grid items-center">
-                                    <div className="flex flex-row-reverse justify-content-end gap-5 w-full">
-                                        <Avatar>
-                                            <AvatarImage src={`https://ddragon.leagueoflegends.com/cdn/${PATCH_NO}/img/champion/${sel?.id}.png`} />
-                                            <AvatarFallback>CN</AvatarFallback>
-                                        </Avatar>
-                                        <div className="flex flex-col gap-1 items-end justify-center">
-                                            <h4 className="font-semibold leading-none text-lg text-amber-400">{sel?.name || "...Picking"}</h4>
-                                            <h5 className="text-small tracking-tight text-amber-400 opacity-50">TOP</h5>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
+    const isSelected = (champion) => allSelected.some(c => c?.id === champion?.id);
+
+    const champImageUrl = (id) =>
+        `https://ddragon.leagueoflegends.com/cdn/${PATCH_NO}/img/champion/${id}.png`;
+
+    const handleDragStart = (e, champion) => {
+        setDraggedChamp(champion);
+        e.dataTransfer.effectAllowed = 'copy';
+    };
+
+    const handleDragOver = (e, side, index) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+        setDragOverSlot(`${side}-${index}`);
+    };
+
+    const handleDragLeave = () => {
+        setDragOverSlot(null);
+    };
+
+    const handleDrop = (e, side, index) => {
+        e.preventDefault();
+        setDragOverSlot(null);
+        if (!draggedChamp || isSelected(draggedChamp)) return;
+
+        setSelected(prev => {
+            const updated = { ...prev, [side]: [...prev[side]] };
+            updated[side][index] = draggedChamp;
+            return updated;
+        });
+        setDraggedChamp(null);
+    };
+
+    const handleRemove = (side, index) => {
+        setSelected(prev => {
+            const updated = { ...prev, [side]: [...prev[side]] };
+            updated[side][index] = null;
+            return updated;
+        });
+    };
+
+    const BanSlot = ({ side, index }) => {
+        const sel = selected[side][index];
+        const slotKey = `${side}-${index}`;
+        const isOver = dragOverSlot === slotKey;
+
+        return (
+            <div
+                onDragOver={(e) => handleDragOver(e, side, index)}
+                onDragLeave={handleDragLeave}
+                onDrop={(e) => handleDrop(e, side, index)}
+                onClick={() => sel && handleRemove(side, index)}
+                title={sel ? `${sel.name} — click to remove` : 'Drop a champion here to ban'}
+                className={`w-12 h-12 bg-gray-800 border-2 flex items-center justify-center transition-colors
+                    ${isOver ? 'border-red-400 bg-red-900/30' : 'border-red-500/40'}
+                    ${sel ? 'cursor-pointer hover:border-red-400' : 'cursor-default'}`}>
+                {sel ? (
+                    <img
+                        src={champImageUrl(sel.id)}
+                        alt={sel.name}
+                        className="w-full h-full object-cover grayscale brightness-75"
+                    />
+                ) : (
+                    <span className="text-red-500/40 text-[10px] font-bold">BAN</span>
+                )}
+            </div>
+        );
+    };
+
+    const PickSlot = ({ side, index }) => {
+        const sel = selected[side][index];
+        const slotKey = `${side}-${index}`;
+        const isOver = dragOverSlot === slotKey;
+        const isBlue = side === 'blue';
+
+        return (
+            <div
+                onDragOver={(e) => handleDragOver(e, side, index)}
+                onDragLeave={handleDragLeave}
+                onDrop={(e) => handleDrop(e, side, index)}
+                onClick={() => sel && handleRemove(side, index)}
+                title={sel ? `${sel.name} — click to remove` : 'Drop a champion here to pick'}
+                className={`max-h-[120px] border-y-2 py-1 px-4 flex items-center transition-colors
+                    ${isOver ? 'bg-amber-500/20 border-amber-300' : 'border-amber-200/40 bg-transparent'}
+                    ${sel ? 'cursor-pointer hover:border-amber-300' : 'cursor-default'}
+                    ${isBlue ? 'justify-start' : 'justify-end'}`}>
+                <div className={`flex gap-5 w-full ${!isBlue && 'flex-row-reverse'}`}>
+                    <Avatar className="shrink-0">
+                        {sel ? (
+                            <AvatarImage src={champImageUrl(sel.id)} alt={sel.name} />
+                        ) : (
+                            <AvatarFallback className="bg-gray-700 text-amber-400/40 text-lg">?</AvatarFallback>
+                        )}
+                    </Avatar>
+                    <div className={`flex flex-col gap-1 justify-center ${isBlue ? 'items-start' : 'items-end'}`}>
+                        <h4 className="font-semibold leading-none text-lg text-amber-400">
+                            {sel?.name || (isBlue ? 'Picking...' : '...Picking')}
+                        </h4>
                     </div>
                 </div>
             </div>
+        );
+    };
+
+    const filteredChampions = champions.data
+        ? Object.entries(champions.data).filter(([key]) =>
+            key.toLowerCase().includes(searchTerm.toLowerCase())
+          )
+        : [];
+
+    return (
+        <div className="flex flex-col items-center py-12 px-4 min-h-screen bg-gray-900">
+            <div className="grid grid-cols-3 gap-8 w-full max-w-screen-xl">
+
+                {/* Blue Side */}
+                <div className="flex flex-col gap-4">
+                    <p className="text-blue-400 font-bold text-center tracking-widest text-sm uppercase">Blue Side</p>
+
+                    {/* Blue Bans */}
+                    <div className="grid grid-cols-5 gap-2">
+                        {selected.blueBan.map((_, index) => (
+                            <BanSlot key={index} side="blueBan" index={index} />
+                        ))}
+                    </div>
+
+                    {/* Blue Picks */}
+                    <div className="flex flex-col gap-3">
+                        {selected.blue.map((_, index) => (
+                            <PickSlot key={index} side="blue" index={index} />
+                        ))}
+                    </div>
+                </div>
+
+                {/* Champion Picker */}
+                <div className="flex flex-col">
+                    <p className="text-amber-400 font-bold text-center tracking-widest text-sm uppercase mb-4">Champion Select</p>
+                    <Input
+                        type="text"
+                        placeholder="Search champion..."
+                        className="mb-3 bg-gray-700 text-white border-gray-600 placeholder:text-gray-400"
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                    <div className="grid grid-cols-8 bg-gray-800 p-2 gap-1 overflow-y-auto"
+                        style={{ height: '520px' }}>
+                        {filteredChampions.map(([, champion]) => {
+                            const taken = isSelected(champion);
+                            return (
+                                <div
+                                    key={champion.key}
+                                    draggable={!taken}
+                                    onDragStart={(e) => handleDragStart(e, champion)}
+                                    className={`flex flex-col items-center p-1 select-none transition-opacity
+                                        ${taken
+                                            ? 'opacity-35 grayscale cursor-not-allowed'
+                                            : 'cursor-grab hover:ring-2 hover:ring-amber-300 hover:bg-gray-700 rounded'
+                                        }`}>
+                                    <img
+                                        loading="lazy"
+                                        alt={champion.name}
+                                        src={champImageUrl(champion.id)}
+                                        draggable={false}
+                                        className="w-full h-auto mb-0.5"
+                                    />
+                                    <p className="text-amber-50 text-[9px] tracking-tight text-center leading-tight">
+                                        {champion.name}
+                                    </p>
+                                </div>
+                            );
+                        })}
+                    </div>
+                    <p className="text-gray-500 text-xs text-center mt-2">
+                        Drag champions into pick/ban slots &bull; Click a slot to remove
+                    </p>
+                </div>
+
+                {/* Red Side */}
+                <div className="flex flex-col gap-4">
+                    <p className="text-red-400 font-bold text-center tracking-widest text-sm uppercase">Red Side</p>
+
+                    {/* Red Bans */}
+                    <div className="grid grid-cols-5 gap-2">
+                        {selected.redBan.map((_, index) => (
+                            <BanSlot key={index} side="redBan" index={index} />
+                        ))}
+                    </div>
+
+                    {/* Red Picks */}
+                    <div className="flex flex-col gap-3">
+                        {selected.red.map((_, index) => (
+                            <PickSlot key={index} side="red" index={index} />
+                        ))}
+                    </div>
+                </div>
+
+            </div>
         </div>
     );
-};
+}

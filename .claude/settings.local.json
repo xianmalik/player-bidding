@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s \"https://ddragon.leagueoflegends.com/api/versions.json\")",
+      "Bash(grep -E '^\\(autoprefixer|postcss\\)$')",
+      "Bash(npm install *)"
+    ]
+  }
+}
