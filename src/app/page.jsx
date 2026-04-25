@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Card } from "@/components/ui/card"
-import { Search, Ban, Shield, Swords, X, Command } from 'lucide-react';
+import { Search, Ban, Shield, Swords, X, Command, Check } from 'lucide-react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PATCH_NO } from '@/lib/const';
@@ -95,7 +95,7 @@ export default function HomePage() {
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => handleDrop(e, side, index)}
                 className={`relative cursor-pointer overflow-hidden transition-all duration-300
-                    ${isBan ? 'w-14 h-14 rounded-md' : `h-28 w-[92%] rounded-xl ${isBlue ? 'mr-auto' : 'ml-auto'}`}
+                    ${isBan ? 'w-16 h-16 rounded-md' : `h-28 w-[92%] rounded-xl ${isBlue ? 'mr-auto' : 'ml-auto'}`}
                     ${isActive ? (isBlue ? 'ring-2 ring-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.5)]' : 'ring-2 ring-red-500 shadow-[0_0_20px_rgba(239,68,68,0.5)]') : 'opacity-80'}
                     bg-gray-800/40 backdrop-blur-md border border-white/10 group`}
             >
@@ -105,23 +105,18 @@ export default function HomePage() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             src={imageUrl}
-                            className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${isBan ? 'grayscale contrast-125' : 'object-[center_20%]'}`}
+                            className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${isBan ? '' : 'object-[center_20%]'}`}
                             alt={data.name}
                         />
                         {!isBan && (
                             <div className={`absolute inset-0 bg-gradient-to-t ${isBlue ? 'from-blue-950/90 via-blue-900/20' : 'from-red-950/90 via-red-900/20'} to-transparent flex flex-col justify-end p-3`}>
                                 <p className="font-black text-lg text-white uppercase tracking-tighter italic drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">{data.name}</p>
-                                <div className="flex items-center gap-2">
-                                    <div className={`w-1 h-1 rounded-full animate-pulse ${isBlue ? 'bg-blue-400' : 'bg-red-400'}`} />
-                                    <p className="text-[8px] text-white/70 font-black uppercase tracking-[0.2em]">Locked</p>
-                                </div>
                             </div>
                         )}
-                        {isBan && <Ban className="absolute inset-0 m-auto text-red-500/80 w-6 h-6 stroke-[3px]" />}
                     </div>
                 ) : (
                     <div className="flex items-center justify-center h-full text-white/10">
-                        {isBan ? <Ban size={16} /> : <Shield size={32} className="opacity-20" />}
+                        {isBan ? <div className="w-1 h-1 rounded-full bg-white/20" /> : <Shield size={32} className="opacity-20" />}
                     </div>
                 )}
             </motion.div>
@@ -237,12 +232,23 @@ export default function HomePage() {
                                                 />
                                                 
                                                 {isBanned && (
-                                                    <div className="absolute inset-0 flex items-center justify-center bg-red-900/40 backdrop-grayscale-[0.5]">
+                                                    <div className="absolute inset-0 flex items-center justify-center">
                                                         <motion.div
                                                             initial={{ scale: 0.5, opacity: 0 }}
                                                             animate={{ scale: 1, opacity: 1 }}
                                                         >
-                                                            <Ban className="text-red-500 w-12 h-12 stroke-[3px] drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]" />
+                                                            <Ban className="text-red-600 w-8 h-8 stroke-[3px] drop-shadow-[0_0_8px_rgba(220,38,38,0.8)]" />
+                                                        </motion.div>
+                                                    </div>
+                                                )}
+
+                                                {isPicked && (
+                                                    <div className="absolute inset-0 flex items-center justify-center">
+                                                        <motion.div
+                                                            initial={{ scale: 0.5, opacity: 0 }}
+                                                            animate={{ scale: 1, opacity: 1 }}
+                                                        >
+                                                            <Check className="text-emerald-500 w-10 h-10 stroke-[4px] drop-shadow-[0_0_10px_rgba(16,185,129,0.8)]" />
                                                         </motion.div>
                                                     </div>
                                                 )}
