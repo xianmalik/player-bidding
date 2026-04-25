@@ -95,7 +95,7 @@ export default function HomePage() {
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => handleDrop(e, side, index)}
                 className={`relative cursor-pointer overflow-hidden transition-all duration-300
-                    ${isBan ? 'w-12 h-12 rounded-sm' : 'h-32 w-full rounded-xl'}
+                    ${isBan ? 'w-14 h-14 rounded-md' : `h-28 w-[92%] rounded-xl ${isBlue ? 'mr-auto' : 'ml-auto'}`}
                     ${isActive ? (isBlue ? 'ring-2 ring-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.5)]' : 'ring-2 ring-red-500 shadow-[0_0_20px_rgba(239,68,68,0.5)]') : 'opacity-80'}
                     bg-gray-800/40 backdrop-blur-md border border-white/10 group`}
             >
@@ -109,11 +109,11 @@ export default function HomePage() {
                             alt={data.name}
                         />
                         {!isBan && (
-                            <div className={`absolute inset-0 bg-gradient-to-t ${isBlue ? 'from-blue-950/90 via-blue-900/20' : 'from-red-950/90 via-red-900/20'} to-transparent flex flex-col justify-end p-4`}>
-                                <p className="font-black text-xl text-white uppercase tracking-tighter italic drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">{data.name}</p>
+                            <div className={`absolute inset-0 bg-gradient-to-t ${isBlue ? 'from-blue-950/90 via-blue-900/20' : 'from-red-950/90 via-red-900/20'} to-transparent flex flex-col justify-end p-3`}>
+                                <p className="font-black text-lg text-white uppercase tracking-tighter italic drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">{data.name}</p>
                                 <div className="flex items-center gap-2">
-                                    <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${isBlue ? 'bg-blue-400' : 'bg-red-400'}`} />
-                                    <p className="text-[10px] text-white/70 font-black uppercase tracking-[0.2em]">Locked</p>
+                                    <div className={`w-1 h-1 rounded-full animate-pulse ${isBlue ? 'bg-blue-400' : 'bg-red-400'}`} />
+                                    <p className="text-[8px] text-white/70 font-black uppercase tracking-[0.2em]">Locked</p>
                                 </div>
                             </div>
                         )}
@@ -133,27 +133,14 @@ export default function HomePage() {
             <div className="max-w-[1800px] mx-auto grid grid-cols-12 gap-10">
                 
                 {/* BLUE SIDE */}
-                <div className="col-span-3 space-y-8">
-                    <div className="flex items-center gap-4 border-b border-blue-500/30 pb-6">
-                        <div className="p-3 bg-blue-500/10 rounded-xl border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.1)]">
-                            <Shield className="text-blue-400" size={24} />
-                        </div>
-                        <div>
-                            <h2 className="text-2xl font-black italic tracking-tighter text-blue-400 uppercase">Blue Team</h2>
-                            <p className="text-[10px] text-blue-300/40 font-black tracking-[0.3em] uppercase">Tactical Phase</p>
-                        </div>
-                    </div>
-                    
-                    {/* BANS SECTION */}
-                    <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-black text-blue-400/40 uppercase tracking-[0.3em]">Bans</span>
-                        </div>
-                        <div className="flex items-center gap-2">
+                <div className="col-span-3 space-y-6">
+                    <div className="space-y-3">
+                        <h2 className="text-2xl font-black italic tracking-tighter text-blue-400 uppercase">Blue Team</h2>
+                        <div className="flex items-center justify-between w-[92%] mr-auto">
                             <div className="grid grid-cols-3 gap-2">
                                 {[0,1,2].map(i => <Slot key={i} side="blueBan" index={i} type="ban" />)}
                             </div>
-                            <div className="h-8 w-[1px] bg-blue-500/20 mx-1" />
+                            <div className="h-10 w-[1px] bg-blue-500/20" />
                             <div className="grid grid-cols-2 gap-2">
                                 {[3,4].map(i => <Slot key={i} side="blueBan" index={i} type="ban" />)}
                             </div>
@@ -220,10 +207,10 @@ export default function HomePage() {
                         </div>
                     </div>
 
-                    <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 backdrop-blur-3xl relative overflow-hidden">
+                    <div className="bg-white/5 border border-white/10 rounded-2xl backdrop-blur-3xl relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
-                        <ScrollArea className="h-[680px] pr-6">
-                            <div className="grid grid-cols-6 gap-4">
+                        <ScrollArea className="h-[750px]">
+                            <div className="grid grid-cols-8 gap-2 p-4">
                                 <AnimatePresence mode='popLayout'>
                                     {filteredChampions.map(([key, champ]) => {
                                         const isBanned = [...selected.blueBan, ...selected.redBan].some(s => s?.id === champ.id);
@@ -273,27 +260,14 @@ export default function HomePage() {
                 </div>
 
                 {/* RED SIDE */}
-                <div className="col-span-3 space-y-8">
-                    <div className="flex items-center justify-end gap-4 border-b border-red-500/30 pb-6">
-                        <div className="text-right">
-                            <h2 className="text-2xl font-black italic tracking-tighter text-red-400 uppercase">Red Team</h2>
-                            <p className="text-[10px] text-red-300/40 font-black tracking-[0.3em] uppercase">Tactical Phase</p>
-                        </div>
-                        <div className="p-3 bg-red-500/10 rounded-xl border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]">
-                            <Swords className="text-red-400" size={24} />
-                        </div>
-                    </div>
-
-                    {/* BANS SECTION */}
-                    <div className="space-y-2">
-                        <div className="flex items-center justify-end gap-2">
-                            <span className="text-[10px] font-black text-red-400/40 uppercase tracking-[0.3em]">Bans</span>
-                        </div>
-                        <div className="flex items-center justify-end gap-2">
+                <div className="col-span-3 space-y-6">
+                    <div className="space-y-3 text-right">
+                        <h2 className="text-2xl font-black italic tracking-tighter text-red-400 uppercase">Red Team</h2>
+                        <div className="flex items-center justify-between w-[92%] ml-auto">
                             <div className="grid grid-cols-2 gap-2">
                                 {[3,4].map(i => <Slot key={i} side="redBan" index={i} type="ban" />)}
                             </div>
-                            <div className="h-8 w-[1px] bg-red-500/20 mx-1" />
+                            <div className="h-10 w-[1px] bg-red-500/20" />
                             <div className="grid grid-cols-3 gap-2">
                                 {[0,1,2].map(i => <Slot key={i} side="redBan" index={i} type="ban" />)}
                             </div>
