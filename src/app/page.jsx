@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Card } from "@/components/ui/card"
-import { Search, Ban, Shield, Swords } from 'lucide-react';
+import { Search, Ban, Shield, Swords, X, Command } from 'lucide-react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PATCH_NO } from '@/lib/const';
@@ -15,6 +15,8 @@ export default function HomePage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [currentSide, setCurrentSide] = useState('blue');
     const [currentSelection, setCurrentSelection] = useState(0);
+    const searchInputRef = useRef(null);
+
     const [selected, setSelected] = useState({
         blueBan: Array(5).fill(null),
         redBan: Array(5).fill(null),
@@ -32,6 +34,16 @@ export default function HomePage() {
             }
         };
         fetchChampions();
+
+        // Keyboard shortcut to focus search
+        const handleKeyDown = (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                searchInputRef.current?.focus();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
     }, []);
 
     const selectChamp = useCallback((champKey, side = currentSide, index = currentSelection) => {
@@ -67,8 +79,14 @@ export default function HomePage() {
         const isBan = type === 'ban';
         const data = selected[side][index];
         const isActive = currentSide === side && currentSelection === index;
-        const sideColor = side.startsWith('blue') ? 'blue' : 'red';
+        const isBlue = side.startsWith('blue');
         
+        const imageUrl = data 
+            ? (isBan 
+                ? `https://ddragon.leagueoflegends.com/cdn/${PATCH_NO}/img/champion/${data.id}.png`
+                : `https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${data.id}_0.jpg`)
+            : null;
+
         return (
             <motion.div
                 whileHover={{ scale: 1.02 }}
@@ -77,28 +95,33 @@ export default function HomePage() {
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => handleDrop(e, side, index)}
                 className={`relative cursor-pointer overflow-hidden transition-all duration-300
-                    ${isBan ? 'w-12 h-12 rounded-sm' : 'h-24 w-full rounded-lg'}
-                    ${isActive ? `ring-2 ring-${sideColor}-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]` : 'opacity-80'}
-                    bg-gray-800/40 backdrop-blur-md border border-white/10`}
+                    ${isBan ? 'w-12 h-12 rounded-sm' : 'h-32 w-full rounded-xl'}
+                    ${isActive ? (isBlue ? 'ring-2 ring-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.5)]' : 'ring-2 ring-red-500 shadow-[0_0_20px_rgba(239,68,68,0.5)]') : 'opacity-80'}
+                    bg-gray-800/40 backdrop-blur-md border border-white/10 group`}
             >
                 {data ? (
-                    <div className="relative w-full h-full group">
-                        <img 
-                            src={`https://ddragon.leagueoflegends.com/cdn/${PATCH_NO}/img/champion/${data.id}.png`}
-                            className={`w-full h-full object-cover ${isBan ? 'grayscale contrast-125' : ''}`}
+                    <div className="relative w-full h-full">
+                        <motion.img 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            src={imageUrl}
+                            className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${isBan ? 'grayscale contrast-125' : 'object-[center_20%]'}`}
                             alt={data.name}
                         />
                         {!isBan && (
-                            <div className={`absolute inset-0 bg-gradient-to-t from-${sideColor}-900/80 to-transparent flex flex-col justify-end p-3`}>
-                                <p className="font-bold text-sm text-white uppercase tracking-tighter">{data.name}</p>
-                                <p className="text-[10px] text-white/60 font-medium">LOCKED</p>
+                            <div className={`absolute inset-0 bg-gradient-to-t ${isBlue ? 'from-blue-950/90 via-blue-900/20' : 'from-red-950/90 via-red-900/20'} to-transparent flex flex-col justify-end p-4`}>
+                                <p className="font-black text-xl text-white uppercase tracking-tighter italic drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">{data.name}</p>
+                                <div className="flex items-center gap-2">
+                                    <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${isBlue ? 'bg-blue-400' : 'bg-red-400'}`} />
+                                    <p className="text-[10px] text-white/70 font-black uppercase tracking-[0.2em]">Confirmed</p>
+                                </div>
                             </div>
                         )}
                         {isBan && <Ban className="absolute inset-0 m-auto text-red-500/80 w-6 h-6 stroke-[3px]" />}
                     </div>
                 ) : (
-                    <div className="flex items-center justify-center h-full text-white/20">
-                        {isBan ? <Ban size={16} /> : <Shield size={24} />}
+                    <div className="flex items-center justify-center h-full text-white/10">
+                        {isBan ? <Ban size={16} /> : <Shield size={32} className="opacity-20" />}
                     </div>
                 )}
             </motion.div>
@@ -106,18 +129,18 @@ export default function HomePage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#020617] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-[#020617] to-black text-slate-200 p-8">
-            <div className="max-w-[1800px] mx-auto grid grid-cols-12 gap-8">
+        <div className="min-h-screen bg-[#020617] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-[#020617] to-black text-slate-200 p-8 pt-32">
+            <div className="max-w-[1800px] mx-auto grid grid-cols-12 gap-10">
                 
                 {/* BLUE SIDE */}
-                <div className="col-span-3 space-y-6">
-                    <div className="flex items-center gap-3 border-b border-blue-500/30 pb-4">
-                        <div className="p-2 bg-blue-500/10 rounded-lg">
-                            <Shield className="text-blue-400" />
+                <div className="col-span-3 space-y-8">
+                    <div className="flex items-center gap-4 border-b border-blue-500/30 pb-6">
+                        <div className="p-3 bg-blue-500/10 rounded-xl border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.1)]">
+                            <Shield className="text-blue-400" size={24} />
                         </div>
                         <div>
-                            <h2 className="text-xl font-black italic tracking-tighter text-blue-400">BLUE TEAM</h2>
-                            <p className="text-[10px] text-blue-300/50 font-bold tracking-widest">PICKING PHASE</p>
+                            <h2 className="text-2xl font-black italic tracking-tighter text-blue-400 uppercase">Blue Team</h2>
+                            <p className="text-[10px] text-blue-300/40 font-black tracking-[0.3em] uppercase">Tactical Phase</p>
                         </div>
                     </div>
                     
@@ -125,26 +148,55 @@ export default function HomePage() {
                         {[0,1,2,3,4].map(i => <Slot key={i} side="blueBan" index={i} type="ban" />)}
                     </div>
 
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                         {[0,1,2,3,4].map(i => <Slot key={i} side="blue" index={i} />)}
                     </div>
                 </div>
 
                 {/* CHAMPION SELECTION */}
-                <div className="col-span-6 space-y-6">
-                    <div className="relative group">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-amber-400 transition-colors" size={20} />
-                        <Input 
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            placeholder="FIND YOUR CHAMPION..."
-                            className="h-14 pl-12 bg-white/5 border-white/10 focus:border-amber-500/50 focus:ring-amber-500/20 text-lg font-bold tracking-widest rounded-xl backdrop-blur-xl"
-                        />
+                <div className="col-span-6 space-y-8">
+                    {/* Modern Search Bar */}
+                    <div className="relative group max-w-2xl mx-auto w-full">
+                        <div className="absolute -inset-1 bg-gradient-to-r from-blue-600/20 via-amber-500/20 to-red-600/20 rounded-2xl blur opacity-25 group-focus-within:opacity-100 transition-all duration-500" />
+                        <div className="relative flex items-center bg-white/5 backdrop-blur-3xl border border-white/10 rounded-2xl overflow-hidden group-focus-within:border-white/20 transition-all">
+                            <div className="pl-5 text-white/20 group-focus-within:text-amber-400 transition-colors">
+                                <Search size={22} />
+                            </div>
+                            <input 
+                                ref={searchInputRef}
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                placeholder="Search Champions..."
+                                className="w-full h-16 bg-transparent border-none focus:ring-0 text-lg font-bold italic tracking-wider px-4 text-white placeholder:text-white/10"
+                            />
+                            
+                            <div className="flex items-center gap-2 pr-5">
+                                <AnimatePresence>
+                                    {searchTerm && (
+                                        <motion.button
+                                            initial={{ opacity: 0, scale: 0.8 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            exit={{ opacity: 0, scale: 0.8 }}
+                                            onClick={() => setSearchTerm('')}
+                                            className="p-1 hover:bg-white/10 rounded-md text-white/40 hover:text-white transition-colors"
+                                        >
+                                            <X size={18} />
+                                        </motion.button>
+                                    )}
+                                </AnimatePresence>
+                                <div className="h-6 w-[1px] bg-white/10" />
+                                <div className="flex items-center gap-1 bg-white/5 px-2 py-1 rounded border border-white/5 text-[10px] font-black text-white/30 tracking-tighter">
+                                    <Command size={10} />
+                                    <span>K</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-2xl">
-                        <ScrollArea className="h-[650px] pr-4">
-                            <div className="grid grid-cols-6 gap-4">
+                    <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 backdrop-blur-3xl relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
+                        <ScrollArea className="h-[680px] pr-6">
+                            <div className="grid grid-cols-5 gap-4">
                                 <AnimatePresence mode='popLayout'>
                                     {filteredChampions.map(([key, champ]) => {
                                         const isSelected = Object.values(selected).flat().some(s => s?.id === champ.id);
@@ -158,16 +210,16 @@ export default function HomePage() {
                                                 draggable={!isSelected}
                                                 onDragStart={(e) => handleDragStart(e, key)}
                                                 onClick={() => !isSelected && selectChamp(key)}
-                                                className={`relative group cursor-pointer aspect-square rounded-lg overflow-hidden border-2 transition-all duration-300
-                                                    ${isSelected ? 'opacity-20 grayscale border-transparent cursor-not-allowed' : 'border-white/5 hover:border-amber-400/50 hover:shadow-[0_0_20px_rgba(251,191,36,0.3)]'}`}
+                                                className={`relative group cursor-pointer aspect-square rounded-2xl overflow-hidden border-2 transition-all duration-500
+                                                    ${isSelected ? 'opacity-20 grayscale border-transparent cursor-not-allowed scale-95' : 'border-white/5 hover:border-amber-400/50 hover:shadow-[0_0_30px_rgba(251,191,36,0.2)] hover:-translate-y-1'}`}
                                             >
                                                 <img 
                                                     src={`https://ddragon.leagueoflegends.com/cdn/${PATCH_NO}/img/champion/${champ.id}.png`}
-                                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                                     alt={champ.name}
                                                 />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
-                                                    <p className="text-[10px] font-black text-white truncate w-full">{champ.name.toUpperCase()}</p>
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2 text-center">
+                                                    <p className="text-[10px] font-black text-white italic tracking-widest w-full uppercase">{champ.name}</p>
                                                 </div>
                                             </motion.div>
                                         );
@@ -179,14 +231,14 @@ export default function HomePage() {
                 </div>
 
                 {/* RED SIDE */}
-                <div className="col-span-3 space-y-6">
-                    <div className="flex items-center justify-end gap-3 border-b border-red-500/30 pb-4">
+                <div className="col-span-3 space-y-8">
+                    <div className="flex items-center justify-end gap-4 border-b border-red-500/30 pb-6">
                         <div className="text-right">
-                            <h2 className="text-xl font-black italic tracking-tighter text-red-400">RED TEAM</h2>
-                            <p className="text-[10px] text-red-300/50 font-bold tracking-widest">PICKING PHASE</p>
+                            <h2 className="text-2xl font-black italic tracking-tighter text-red-400 uppercase">Red Team</h2>
+                            <p className="text-[10px] text-red-300/40 font-black tracking-[0.3em] uppercase">Tactical Phase</p>
                         </div>
-                        <div className="p-2 bg-red-500/10 rounded-lg">
-                            <Swords className="text-red-400" />
+                        <div className="p-3 bg-red-500/10 rounded-xl border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]">
+                            <Swords className="text-red-400" size={24} />
                         </div>
                     </div>
 
@@ -194,7 +246,7 @@ export default function HomePage() {
                         {[0,1,2,3,4].map(i => <Slot key={i} side="redBan" index={i} type="ban" />)}
                     </div>
 
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                         {[0,1,2,3,4].map(i => <Slot key={i} side="red" index={i} />)}
                     </div>
                 </div>
