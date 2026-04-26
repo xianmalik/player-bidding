@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Card } from "@/components/ui/card"
-import { Search, Ban, Shield, X, Command, Check, RotateCcw, Download, Share2, Bookmark, Link2, Copy } from 'lucide-react';
+import { Search, Ban, Shield, X, Command, Check, RotateCcw, Download, Share2, Link2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 
 import axios from 'axios';
@@ -308,32 +308,38 @@ export default function HomePage() {
                                             </div>
 
                                             {/* ACTION BAR */}
-                                            <div className="flex items-center gap-1 px-3 h-14 rounded-2xl bg-slate-900/80 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.6)] shrink-0">
-                                                {[
-                                                    { icon: Download,  label: 'Download',  onClick: handleDownload, color: 'text-amber-400', hover: 'hover:bg-amber-500/15 hover:border-amber-500/30' },
-                                                    { icon: Share2,    label: 'Share',      onClick: () => navigator.share?.({ title: 'Draft', url: window.location.href }), color: 'text-blue-400', hover: 'hover:bg-blue-500/15 hover:border-blue-500/30' },
-                                                    { icon: Link2,     label: 'Copy Link',  onClick: () => navigator.clipboard.writeText(window.location.href), color: 'text-purple-400', hover: 'hover:bg-purple-500/15 hover:border-purple-500/30' },
-                                                    { icon: Copy,      label: 'Duplicate',  onClick: () => {}, color: 'text-green-400', hover: 'hover:bg-green-500/15 hover:border-green-500/30' },
-                                                    { icon: Bookmark,  label: 'Save',       onClick: () => {}, color: 'text-rose-400',   hover: 'hover:bg-rose-500/15 hover:border-rose-500/30' },
-                                                    { icon: RotateCcw, label: 'Reset',      onClick: resetDraft,   color: 'text-red-400',    hover: 'hover:bg-red-500/15 hover:border-red-500/30' },
-                                                ].map(({ icon: Icon, label, onClick, color, hover }) => (
+                                            <div className="flex items-center h-14 px-2 rounded-2xl bg-slate-900/80 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.6)] shrink-0">
+                                                {/* Reset */}
+                                                {[{ icon: RotateCcw, label: 'Reset', onClick: resetDraft, color: 'text-red-400', hover: 'hover:bg-red-500/15 hover:border-red-500/30' }].map(({ icon: Icon, label, onClick, color, hover }) => (
                                                     <div key={label} className="relative group/btn">
-                                                        <button
-                                                            onClick={onClick}
-                                                            className={`flex items-center justify-center w-9 h-9 rounded-xl border border-transparent transition-all duration-200 ${hover} ${color}`}
-                                                        >
+                                                        <button onClick={onClick} className={`flex items-center justify-center w-9 h-9 rounded-xl border border-transparent transition-all duration-200 ${hover} ${color}`}>
                                                             <Icon size={18} />
                                                         </button>
-                                                        <div className="absolute -bottom-9 left-1/2 -translate-x-1/2 px-2 py-1 rounded-lg bg-slate-800 border border-white/10 text-[10px] font-black text-white/70 uppercase tracking-widest whitespace-nowrap opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none">
-                                                            {label}
-                                                        </div>
+                                                        <div className="absolute -bottom-9 left-1/2 -translate-x-1/2 px-2 py-1 rounded-lg bg-slate-800 border border-white/10 text-[10px] font-black text-white/70 uppercase tracking-widest whitespace-nowrap opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none">{label}</div>
+                                                    </div>
+                                                ))}
+
+                                                {/* Divider */}
+                                                <div className="w-[1px] h-5 bg-white/10 mx-2" />
+
+                                                {/* Download, Copy Link, Share */}
+                                                {[
+                                                    { icon: Download, label: 'Download',  onClick: handleDownload, color: 'text-amber-400', hover: 'hover:bg-amber-500/15 hover:border-amber-500/30' },
+                                                    { icon: Link2,    label: 'Copy Link',  onClick: () => navigator.clipboard.writeText(window.location.href), color: 'text-purple-400', hover: 'hover:bg-purple-500/15 hover:border-purple-500/30' },
+                                                    { icon: Share2,   label: 'Share',      onClick: () => navigator.share?.({ title: 'Draft', url: window.location.href }), color: 'text-blue-400', hover: 'hover:bg-blue-500/15 hover:border-blue-500/30' },
+                                                ].map(({ icon: Icon, label, onClick, color, hover }) => (
+                                                    <div key={label} className="relative group/btn">
+                                                        <button onClick={onClick} className={`flex items-center justify-center w-9 h-9 rounded-xl border border-transparent transition-all duration-200 ${hover} ${color}`}>
+                                                            <Icon size={18} />
+                                                        </button>
+                                                        <div className="absolute -bottom-9 left-1/2 -translate-x-1/2 px-2 py-1 rounded-lg bg-slate-800 border border-white/10 text-[10px] font-black text-white/70 uppercase tracking-widest whitespace-nowrap opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none">{label}</div>
                                                     </div>
                                                 ))}
                                             </div>
                                         </div>
                     <div className="bg-white/5 border border-white/10 rounded-2xl backdrop-blur-3xl relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
-                        <ScrollArea className="h-full max-h-[650px]">
+                        <ScrollArea className="h-[700px]">
                             <div className="grid grid-cols-8 gap-2 p-4">
                                 <AnimatePresence mode='popLayout'>
                                     {filteredChampions.map(([key, champ]) => {
