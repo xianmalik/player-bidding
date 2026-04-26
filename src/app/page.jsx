@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card"
 import { Search, Ban, Shield, X, Command, Check, RotateCcw, Download, Share2, Link2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 
+import Image from 'next/image';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PATCH_NO } from '@/lib/const';
@@ -29,6 +30,7 @@ export default function HomePage() {
 
         const canvas = await html2canvas(pageRef.current, {
             useCORS: true,
+            allowTaint: true,
             backgroundColor: '#020617',
             scale: 2,
         });
@@ -120,6 +122,11 @@ export default function HomePage() {
 
     const handleDragStart = (e, payload) => {
         e.dataTransfer.setData('payload', JSON.stringify(payload));
+        // preload splash art so it's cached by the time the user drops
+        if (payload.type === 'champion') {
+            const img = new window.Image();
+            img.src = `https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${champions[payload.champKey]?.id}_0.jpg`;
+        }
     };
 
     const handleDrop = (e, targetSide, targetIndex) => {
@@ -174,12 +181,16 @@ export default function HomePage() {
             >
                 {data ? (
                     <div className="relative w-full h-full">
-                        <motion.img
+                        {/* bg-image instead of img so html2canvas renders cover correctly */}
+                        <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            src={imageUrl}
-                            className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${isBan ? '' : 'object-[center_20%]'}`}
-                            alt={data.name}
+                            style={{
+                                backgroundImage: `url(${imageUrl})`,
+                                backgroundSize: 'cover',
+                                backgroundPosition: isBan ? 'center' : 'center 20%',
+                            }}
+                            className="w-full h-full transition-transform duration-700 group-hover:scale-110"
                         />
                         {!isBan && (
                             <div className={`absolute inset-0 bg-gradient-to-t ${isBlue ? 'from-blue-950/90 via-blue-900/20' : 'from-red-950/90 via-red-900/20'} to-transparent flex flex-col justify-end p-3`}>
@@ -365,10 +376,11 @@ export default function HomePage() {
                                                 className={`relative group cursor-pointer aspect-square rounded-2xl overflow-hidden border-2 transition-all duration-500
                                                     ${isUnavailable ? 'cursor-not-allowed scale-95 border-transparent' : 'border-white/5 hover:border-amber-400/50 hover:shadow-[0_0_30px_rgba(251,191,36,0.2)] hover:-translate-y-1'}`}
                                             >
-                                                <img 
+                                                <Image
                                                     src={`https://ddragon.leagueoflegends.com/cdn/${PATCH_NO}/img/champion/${champ.id}.png`}
-                                                    className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${isUnavailable ? 'grayscale opacity-30' : ''}`}
                                                     alt={champ.name}
+                                                    fill
+                                                    className={`object-cover transition-transform duration-700 group-hover:scale-110 ${isUnavailable ? 'grayscale opacity-30' : ''}`}
                                                 />
                                                 
                                                 {isBanned && (
