@@ -17,6 +17,7 @@ export default function HomePage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [currentSide, setCurrentSide] = useState('blue');
     const [currentSelection, setCurrentSelection] = useState(0);
+    const [draftMode, setDraftMode] = useState('Draft');
     const searchInputRef = useRef(null);
     const pageRef = useRef(null);
     const blueRef = useRef(null);
@@ -237,6 +238,28 @@ export default function HomePage() {
 
                 {/* CHAMPION SELECTION */}
                 <div className="col-span-6 space-y-8" data-export-ignore="true">
+
+                    {/* Title + Mode Tabs */}
+                    <div className="flex flex-col items-center gap-3">
+                        <h1 className="text-3xl font-black italic tracking-tighter text-white uppercase">
+                            Champion <span className="text-amber-400">Draft</span>
+                        </h1>
+                        <div className="flex items-center gap-1 p-1 rounded-xl bg-white/5 border border-white/10">
+                            {['Draft', 'Fearless Draft'].map((mode) => (
+                                <button
+                                    key={mode}
+                                    onClick={() => setDraftMode(mode)}
+                                    className={`px-4 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all duration-200
+                                        ${draftMode === mode
+                                            ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                                            : 'text-white/30 hover:text-white/60'}`}
+                                >
+                                    {mode}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
                                         {/* Search Bar + Action Bar */}
                                         <div className="flex items-center gap-3 w-full">
                                             <div className="relative group flex-1">
