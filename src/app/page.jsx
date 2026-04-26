@@ -239,22 +239,31 @@ export default function HomePage() {
                 {/* CHAMPION SELECTION */}
                 <div className="col-span-6 space-y-8" data-export-ignore="true">
 
-                    {/* Title + Mode Tabs */}
-                    <div className="flex flex-col items-center gap-3">
-                        <h1 className="text-3xl font-black italic tracking-tighter text-white uppercase">
+                    {/* Title + Mode Nav */}
+                    <div className="flex flex-col items-center gap-4">
+                        <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase">
                             Champion <span className="text-amber-400">Draft</span>
                         </h1>
-                        <div className="flex items-center gap-1 p-1 rounded-xl bg-white/5 border border-white/10">
-                            {['Draft', 'Fearless Draft'].map((mode) => (
+                        <div className="flex items-center gap-8 border-b border-white/10 w-full justify-center">
+                            {[
+                                { label: 'Draft', disabled: false },
+                                { label: 'Fearless Draft', disabled: true },
+                            ].map(({ label, disabled }) => (
                                 <button
-                                    key={mode}
-                                    onClick={() => setDraftMode(mode)}
-                                    className={`px-4 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all duration-200
-                                        ${draftMode === mode
-                                            ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                                            : 'text-white/30 hover:text-white/60'}`}
+                                    key={label}
+                                    onClick={() => !disabled && setDraftMode(label)}
+                                    disabled={disabled}
+                                    className={`relative pb-3 text-sm font-black uppercase tracking-[0.2em] transition-colors duration-200 flex items-center gap-2
+                                        ${disabled ? 'text-white/20 cursor-not-allowed' : draftMode === label ? 'text-amber-400' : 'text-white/30 hover:text-white/60'}`}
                                 >
-                                    {mode}
+                                    {label}
+                                    {disabled && <span className="text-[10px] font-bold normal-case tracking-normal text-white/20">(in progress)</span>}
+                                    {!disabled && draftMode === label && (
+                                        <motion.div
+                                            layoutId="nav-indicator"
+                                            className="absolute bottom-0 left-0 right-0 h-[2px] bg-amber-400 rounded-full"
+                                        />
+                                    )}
                                 </button>
                             ))}
                         </div>
