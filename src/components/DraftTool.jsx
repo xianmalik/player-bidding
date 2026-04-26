@@ -128,11 +128,19 @@ export default function DraftTool() {
             return;
         }
 
+        const stripChamp = (c) => c ? { id: c.id, key: c.key } : null;
+        const minimalDraftData = {
+            blueBan: selected.blueBan.map(stripChamp),
+            redBan: selected.redBan.map(stripChamp),
+            blue: selected.blue.map(stripChamp),
+            red: selected.red.map(stripChamp)
+        };
+
         const { data, error } = await supabase
             .from('drafts')
             .insert([{ 
                 user_id: user.id, 
-                draft_data: selected,
+                draft_data: minimalDraftData,
                 name: `Draft ${new Date().toLocaleDateString()}` 
             }])
             .select()
@@ -311,7 +319,7 @@ export default function DraftTool() {
                         />
                         {!isBan && (
                             <div className={`absolute inset-0 bg-gradient-to-t ${isBlue ? 'from-blue-950/90 via-blue-900/20' : 'from-red-950/90 via-red-900/20'} to-transparent flex flex-col justify-end p-3`}>
-                                <p className="font-black text-lg text-white uppercase tracking-tighter italic drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">{data.name}</p>
+                                <p className="font-black text-lg text-white uppercase tracking-tighter italic drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">{data.name || data.id}</p>
                             </div>
                         )}
                         <button
