@@ -19,12 +19,32 @@ export default function HomePage() {
     const [currentSelection, setCurrentSelection] = useState(0);
     const searchInputRef = useRef(null);
     const pageRef = useRef(null);
+    const blueRef = useRef(null);
+    const redRef = useRef(null);
 
     const handleDownload = async () => {
-        const canvas = await html2canvas(pageRef.current, { useCORS: true, backgroundColor: '#020617' });
+        const canvas = await html2canvas(pageRef.current, {
+            useCORS: true,
+            backgroundColor: '#020617',
+            ignoreElements: (el) => el.dataset.exportIgnore === 'true',
+        });
+
+        const pageRect = pageRef.current.getBoundingClientRect();
+        const blueRect = blueRef.current.getBoundingClientRect();
+        const redRect  = redRef.current.getBoundingClientRect();
+        const scale = canvas.width / pageRect.width;
+
+        const x      = (blueRect.left - pageRect.left) * scale;
+        const width  = (redRect.right - blueRect.left) * scale;
+
+        const cropped = document.createElement('canvas');
+        cropped.width  = width;
+        cropped.height = canvas.height;
+        cropped.getContext('2d').drawImage(canvas, x, 0, width, canvas.height, 0, 0, width, canvas.height);
+
         const link = document.createElement('a');
         link.download = 'draft.png';
-        link.href = canvas.toDataURL('image/png');
+        link.href = cropped.toDataURL('image/png');
         link.click();
     };
 
@@ -181,7 +201,7 @@ export default function HomePage() {
             <div className="max-w-[1800px] mx-auto grid grid-cols-12 gap-10">
                 
                 {/* BLUE SIDE */}
-                <div className="col-span-3 space-y-6">
+                <div ref={blueRef} className="col-span-3 space-y-6">
                     <div className="space-y-3">
                         <h2 className="text-2xl font-black italic tracking-tighter text-blue-400 uppercase">Blue Team</h2>
                         <div className="flex items-center justify-between w-[92%] mr-auto">
@@ -216,7 +236,7 @@ export default function HomePage() {
                 </div>
 
                 {/* CHAMPION SELECTION */}
-                <div className="col-span-6 space-y-8">
+                <div className="col-span-6 space-y-8" data-export-ignore="true">
                                         {/* Modern Search Bar */}
                                         <div className="flex items-center gap-4 max-w-4xl mx-auto w-full">
                                             <div className="relative group flex-1">
@@ -354,7 +374,7 @@ export default function HomePage() {
                 </div>
 
                 {/* RED SIDE */}
-                <div className="col-span-3 space-y-6">
+                <div ref={redRef} className="col-span-3 space-y-6">
                     <div className="space-y-3 text-right">
                         <h2 className="text-2xl font-black italic tracking-tighter text-red-400 uppercase">Red Team</h2>
                         <div className="flex items-center justify-between w-[92%] ml-auto">
