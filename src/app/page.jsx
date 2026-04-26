@@ -24,28 +24,33 @@ export default function HomePage() {
     const redRef = useRef(null);
 
     const handleDownload = async () => {
+        const TARGET_W = 1920;
+        const TARGET_H = 1080;
+
         const canvas = await html2canvas(pageRef.current, {
             useCORS: true,
             backgroundColor: '#020617',
-            ignoreElements: (el) => el.dataset.exportIgnore === 'true',
+            scale: 2,
         });
 
-        const pageRect = pageRef.current.getBoundingClientRect();
-        const blueRect = blueRef.current.getBoundingClientRect();
-        const redRect  = redRef.current.getBoundingClientRect();
-        const scale = canvas.width / pageRect.width;
+        // fit the full captured page into 1920x1080, preserving aspect ratio
+        const ratio = Math.min(TARGET_W / canvas.width, TARGET_H / canvas.height);
+        const destW = canvas.width * ratio;
+        const destH = canvas.height * ratio;
+        const destX = (TARGET_W - destW) / 2;
+        const destY = (TARGET_H - destH) / 2;
 
-        const x      = (blueRect.left - pageRect.left) * scale;
-        const width  = (redRect.right - blueRect.left) * scale;
-
-        const cropped = document.createElement('canvas');
-        cropped.width  = width;
-        cropped.height = canvas.height;
-        cropped.getContext('2d').drawImage(canvas, x, 0, width, canvas.height, 0, 0, width, canvas.height);
+        const out = document.createElement('canvas');
+        out.width = TARGET_W;
+        out.height = TARGET_H;
+        const ctx = out.getContext('2d');
+        ctx.fillStyle = '#020617';
+        ctx.fillRect(0, 0, TARGET_W, TARGET_H);
+        ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height, destX, destY, destW, destH);
 
         const link = document.createElement('a');
         link.download = 'draft.png';
-        link.href = cropped.toDataURL('image/png');
+        link.href = out.toDataURL('image/png');
         link.click();
     };
 
@@ -163,7 +168,7 @@ export default function HomePage() {
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => handleDrop(e, side, index)}
                 className={`relative cursor-pointer overflow-hidden transition-all duration-300
-                    ${isBan ? 'w-16 h-16 rounded-md' : `h-28 w-[92%] rounded-xl ${isBlue ? 'mr-auto' : 'ml-auto'}`}
+                    ${isBan ? 'w-16 h-16 rounded-md' : `h-32 w-full rounded-xl`}
                     ${isActive ? (isBlue ? 'ring-2 ring-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.5)]' : 'ring-2 ring-red-500 shadow-[0_0_20px_rgba(239,68,68,0.5)]') : 'opacity-80'}
                     bg-gray-800/40 backdrop-blur-md border border-white/10 group`}
             >
@@ -199,13 +204,13 @@ export default function HomePage() {
 
     return (
         <div ref={pageRef} className="min-h-screen bg-[#020617] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-[#020617] to-black text-slate-200 px-8 py-4">
-            <div className="max-w-[1800px] mx-auto grid grid-cols-12 gap-10">
+            <div className="max-w-[1600px] mx-auto grid grid-cols-8 gap-6">
                 
                 {/* BLUE SIDE */}
-                <div ref={blueRef} className="col-span-3 space-y-6">
+                <div ref={blueRef} className="col-span-2 space-y-6">
                     <div className="space-y-3">
                         <h2 className="text-2xl font-black italic tracking-tighter text-blue-400 uppercase">Blue Team</h2>
-                        <div className="flex items-center justify-between w-[92%] mr-auto">
+                        <div className="flex items-center justify-between w-full">
                             <div className="grid grid-cols-3 gap-2">
                                 {[0,1,2].map(i => <Slot key={i} side="blueBan" index={i} type="ban" />)}
                             </div>
@@ -237,7 +242,7 @@ export default function HomePage() {
                 </div>
 
                 {/* CHAMPION SELECTION */}
-                <div className="col-span-6 space-y-8" data-export-ignore="true">
+                <div className="col-span-4 space-y-4">
 
                     {/* Title + Mode Nav */}
                     <div className="flex flex-col items-center gap-4">
@@ -339,7 +344,7 @@ export default function HomePage() {
                                         </div>
                     <div className="bg-white/5 border border-white/10 rounded-2xl backdrop-blur-3xl relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
-                        <ScrollArea className="h-[700px]">
+                        <ScrollArea className="h-[680px]">
                             <div className="grid grid-cols-8 gap-2 p-4">
                                 <AnimatePresence mode='popLayout'>
                                     {filteredChampions.map(([key, champ]) => {
@@ -402,10 +407,10 @@ export default function HomePage() {
                 </div>
 
                 {/* RED SIDE */}
-                <div ref={redRef} className="col-span-3 space-y-6">
+                <div ref={redRef} className="col-span-2 space-y-6">
                     <div className="space-y-3 text-right">
                         <h2 className="text-2xl font-black italic tracking-tighter text-red-400 uppercase">Red Team</h2>
-                        <div className="flex items-center justify-between w-[92%] ml-auto">
+                        <div className="flex items-center justify-between w-full">
                             <div className="grid grid-cols-2 gap-2">
                                 {[3,4].map(i => <Slot key={i} side="redBan" index={i} type="ban" />)}
                             </div>
