@@ -439,12 +439,12 @@ export default function DraftTool() {
                                 onChange={(e) => setBlueTeamName(e.target.value)}
                                 onBlur={() => setIsEditingBlue(false)}
                                 onKeyDown={(e) => e.key === 'Enter' && setIsEditingBlue(false)}
-                                className="w-full bg-white/5 border-b border-blue-500 outline-none text-2xl font-black italic tracking-tighter text-blue-400 uppercase placeholder:text-blue-400/50 px-2 py-1 rounded-t-md"
+                                className="w-full bg-white/5 border-b border-blue-500 outline-none text-2xl font-black italic tracking-tighter text-blue-400 placeholder:text-blue-400/50 px-2 py-1 rounded-t-md"
                                 placeholder="Blue Team"
                             />
                         ) : (
                             <div className="flex items-center group gap-2">
-                                <h2 className="text-2xl font-black italic tracking-tighter text-blue-400 uppercase">
+                                    <h2 className="text-2xl font-black italic tracking-tighter text-blue-400">
                                     {blueTeamName}
                                 </h2>
                                 {!isReadOnly && (
@@ -710,7 +710,7 @@ export default function DraftTool() {
                                 onChange={(e) => setRedTeamName(e.target.value)}
                                 onBlur={() => setIsEditingRed(false)}
                                 onKeyDown={(e) => e.key === 'Enter' && setIsEditingRed(false)}
-                                className="w-full bg-white/5 border-b border-red-500 outline-none text-2xl font-black italic tracking-tighter text-red-400 uppercase text-right placeholder:text-red-400/50 px-2 py-1 rounded-t-md"
+                                className="w-full bg-white/5 border-b border-red-500 outline-none text-2xl font-black italic tracking-tighter text-red-400 text-right placeholder:text-red-400/50 px-2 py-1 rounded-t-md"
                                 placeholder="Red Team"
                             />
                         ) : (
@@ -723,7 +723,7 @@ export default function DraftTool() {
                                         <Pencil size={16} />
                                     </button>
                                 )}
-                                <h2 className="text-2xl font-black italic tracking-tighter text-red-400 uppercase">
+                                    <h2 className="text-2xl font-black italic tracking-tighter text-red-400">
                                     {redTeamName}
                                 </h2>
                             </div>

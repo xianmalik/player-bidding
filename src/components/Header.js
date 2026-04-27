@@ -91,33 +91,46 @@ export default function Header({
                                         <ChevronDown size={14} className="opacity-50" />
                                     </button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-56 mt-2">
-                                    <DropdownMenuLabel>
+                                <DropdownMenuContent align="end" className="w-64 mt-2 bg-slate-900/95 backdrop-blur-2xl border-white/10 p-2">
+                                    <DropdownMenuLabel className="px-3 py-3">
                                         <div className="flex flex-col space-y-1">
                                             <p className="text-[10px] text-white/30 font-bold uppercase tracking-widest">Logged in as</p>
                                             <p className="text-xs font-black text-white truncate">{user.email}</p>
                                         </div>
                                     </DropdownMenuLabel>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem>
-                                        <User size={14} className="mr-2 opacity-70" />
-                                        <span>Profile</span>
+                                    <DropdownMenuSeparator className="bg-white/5 my-2" />
+                                    
+                                    <DropdownMenuItem className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-white/5 transition-colors group">
+                                        <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-all">
+                                            <User size={16} />
+                                        </div>
+                                        <span className="font-bold text-xs uppercase tracking-widest">Profile</span>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem>
-                                        <Settings size={14} className="mr-2 opacity-70" />
-                                        <span>Settings</span>
+
+                                    <DropdownMenuItem className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-white/5 transition-colors group">
+                                        <div className="p-2 rounded-lg bg-slate-500/10 text-slate-400 group-hover:bg-slate-500 group-hover:text-white transition-all">
+                                            <Settings size={16} />
+                                        </div>
+                                        <span className="font-bold text-xs uppercase tracking-widest">Settings</span>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem>
-                                        <Shield size={14} className="mr-2 opacity-70" />
-                                        <span>My Drafts</span>
+
+                                    <DropdownMenuItem className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-white/5 transition-colors group">
+                                        <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400 group-hover:bg-amber-500 group-hover:text-slate-900 transition-all">
+                                            <Shield size={16} />
+                                        </div>
+                                        <span className="font-bold text-xs uppercase tracking-widest">My Drafts</span>
                                     </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
+
+                                    <DropdownMenuSeparator className="bg-white/5 my-2" />
+                                    
                                     <DropdownMenuItem 
                                         onClick={onLogout}
-                                        className="text-red-400 focus:bg-red-500/10 focus:text-red-400"
+                                        className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-red-500/10 transition-colors group"
                                     >
-                                        <LogOut size={14} className="mr-2" />
-                                        <span>Logout</span>
+                                        <div className="p-2 rounded-lg bg-red-500/10 text-red-400 group-hover:bg-red-500 group-hover:text-white transition-all">
+                                            <LogOut size={16} />
+                                        </div>
+                                        <span className="font-bold text-xs uppercase tracking-widest text-red-400 group-hover:text-red-300">Logout</span>
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
