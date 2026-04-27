@@ -221,6 +221,12 @@ export default function DraftTool() {
             allowTaint: true,
             backgroundColor: '#020617',
             scale: 2,
+            onclone: (clonedDoc) => {
+                const header = clonedDoc.querySelector('header');
+                if (header) {
+                    header.style.display = 'none';
+                }
+            }
         });
 
         // fit the full captured page into 1920x1080, preserving aspect ratio
