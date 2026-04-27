@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
@@ -105,7 +106,7 @@ export default function DraftTool() {
                         if (data.draft_data.draftTitle) setDraftTitle(data.draft_data.draftTitle);
                     } else if (error) {
                         console.error('Error fetching draft:', error);
-                        alert('Draft not found or is private.');
+                        toast.error('Draft not found or is private.');
                     }
                 } catch (e) {
                     console.error(e);
@@ -143,7 +144,7 @@ export default function DraftTool() {
         } else {
             setIsAuthModalOpen(false);
             if (authMode === 'signup') {
-                alert('Signup successful! Please check your email for verification.');
+                toast.success('Signup successful! Please check your email for verification.');
             }
         }
         setAuthLoading(false);
@@ -155,7 +156,7 @@ export default function DraftTool() {
 
     const handleSaveDraft = async () => {
         if (!user) {
-            alert('Please log in with Google to save your draft.');
+            toast.error('Please log in with Google to save your draft.');
             return;
         }
 
@@ -179,9 +180,9 @@ export default function DraftTool() {
 
             if (error) {
                 console.error('Error updating draft:', error);
-                alert('Failed to update draft. Check console for details.');
+                toast.error('Failed to update draft.');
             } else {
-                alert('Draft updated successfully!');
+                toast.success('Draft updated successfully!');
             }
         } else {
             // Insert new draft
@@ -198,13 +199,15 @@ export default function DraftTool() {
 
             if (error) {
                 console.error('Error saving draft:', error);
-                alert('Failed to save draft. Check console for details.');
+                toast.error('Failed to save draft.');
             } else {
                 setDraftId(data.id);
                 setDraftOwnerId(user.id);
                 const link = `${window.location.origin}/?draft=${data.id}`;
                 navigator.clipboard.writeText(link);
-                alert(`Draft saved successfully!\nLink copied to clipboard:\n${link}`);
+                toast.success('Draft saved successfully!', {
+                    description: 'Link copied to clipboard.'
+                });
             }
         }
     };

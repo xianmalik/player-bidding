@@ -8,6 +8,8 @@ const fontSans = FontSans({
 
 const font = FontSans({ subsets: ["latin"] });
 
+import { Toaster } from "@/components/ui/sonner"
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -17,6 +19,7 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className={font.className}>
         {children}
+        <Toaster />
       </body>
     </html>
   )
