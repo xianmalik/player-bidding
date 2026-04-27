@@ -12,7 +12,7 @@ import {
     DropdownMenuItem,
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { Search, Ban, Shield, X, Command, Check, RotateCcw, Download, Share2, Link2, Save, LogIn, LogOut, MoreVertical, Globe, Lock, Pencil } from 'lucide-react';
+import { Search, Ban, User, X, Command, Check, RotateCcw, Download, Share2, Link2, Save, LogIn, LogOut, MoreVertical, Globe, Lock, Pencil } from 'lucide-react';
 import html2canvas from 'html2canvas';
 
 import Image from 'next/image';
@@ -415,8 +415,13 @@ export default function DraftTool() {
                         )}
                     </div>
                 ) : (
-                    <div className="flex items-center justify-center h-full text-white/10">
-                        {isBan ? <div className="w-1 h-1 rounded-full bg-white/20" /> : <Shield size={32} className="opacity-20" />}
+                    <div className="flex items-center justify-center h-full relative overflow-hidden">
+                        {!isBan && (
+                            <div className={`absolute inset-0 ${isBlue ? '[background:radial-gradient(ellipse_at_bottom_right,rgba(59,130,246,0.12)_0%,transparent_70%)]' : '[background:radial-gradient(ellipse_at_bottom_right,rgba(239,68,68,0.12)_0%,transparent_70%)]'}`} />
+                        )}
+                        <div className="relative z-10 text-white opacity-10">
+                            {isBan ? <Ban size={28} /> : <User size={32} />}
+                        </div>
                     </div>
                 )}
             </motion.div>
@@ -518,7 +523,7 @@ export default function DraftTool() {
                                 {!isReadOnly && (
                                     <button
                                         onClick={() => setIsEditingTitle(true)}
-                                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-white/5 rounded-md text-white/30 hover:text-white"
+                                            className="transition-opacity p-1 hover:bg-white/5 rounded-md text-white/30 hover:text-white"
                                     >
                                         <Pencil size={18} />
                                     </button>
