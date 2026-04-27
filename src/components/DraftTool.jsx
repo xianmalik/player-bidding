@@ -270,8 +270,8 @@ export default function DraftTool() {
     useEffect(() => {
         const fetchChampions = async () => {
             try {
-                const response = await axios.get(`https://ddragon.leagueoflegends.com/cdn/${PATCH_NO}/data/en_US/champion.json`);
-                setChampions(response.data.data);
+                const response = await axios.get('/api/champions');
+                setChampions(response.data);
             } catch (error) {
                 console.error('Error fetching champions:', error);
             }
