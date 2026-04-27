@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Search, Ban, Shield, X, Command, Check, RotateCcw, Download, Share2, Link2, Save, LogIn, LogOut } from 'lucide-react';
+import { Search, Ban, Shield, X, Command, Check, RotateCcw, Download, Share2, Link2, Save, LogIn, LogOut, MoreVertical, Globe, Lock } from 'lucide-react';
 import html2canvas from 'html2canvas';
 
 import Image from 'next/image';
@@ -17,10 +17,17 @@ export default function DraftTool() {
     const [user, setUser] = useState(null);
     const [isLoadingDraft, setIsLoadingDraft] = useState(false);
     const [draftId, setDraftId] = useState(null);
+    const [draftOwnerId, setDraftOwnerId] = useState(null);
+    
+    const isReadOnly = Boolean(draftId && user?.id !== draftOwnerId);
 
     // Auth Modal State
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+
+    // Action Bar State
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [isPublic, setIsPublic] = useState(false);
     const [authMode, setAuthMode] = useState('login'); // 'login' or 'signup'
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -68,13 +75,16 @@ export default function DraftTool() {
                 try {
                     const { data, error } = await supabase
                         .from('drafts')
-                        .select('draft_data')
+                        .select('draft_data, user_id, is_public')
                         .eq('id', id)
                         .single();
                     if (data && data.draft_data) {
                         setSelected(data.draft_data);
+                        setDraftOwnerId(data.user_id);
+                        setIsPublic(data.is_public);
                     } else if (error) {
                         console.error('Error fetching draft:', error);
+                        alert('Draft not found or is private.');
                     }
                 } catch (e) {
                     console.error(e);
@@ -136,23 +146,42 @@ export default function DraftTool() {
             red: selected.red.map(stripChamp)
         };
 
-        const { data, error } = await supabase
-            .from('drafts')
-            .insert([{ 
-                user_id: user.id, 
-                draft_data: minimalDraftData,
-                name: `Draft ${new Date().toLocaleDateString()}` 
-            }])
-            .select()
-            .single();
+        if (draftId && user.id === draftOwnerId) {
+            // Update existing draft
+            const { error } = await supabase
+                .from('drafts')
+                .update({ draft_data: minimalDraftData, is_public: isPublic })
+                .eq('id', draftId);
 
-        if (error) {
-            console.error('Error saving draft:', error);
-            alert('Failed to save draft. Check console for details.');
+            if (error) {
+                console.error('Error updating draft:', error);
+                alert('Failed to update draft. Check console for details.');
+            } else {
+                alert('Draft updated successfully!');
+            }
         } else {
-            const link = `${window.location.origin}/?draft=${data.id}`;
-            navigator.clipboard.writeText(link);
-            alert(`Draft saved successfully!\nLink copied to clipboard:\n${link}`);
+            // Insert new draft
+            const { data, error } = await supabase
+                .from('drafts')
+                .insert([{ 
+                    user_id: user.id, 
+                    draft_data: minimalDraftData,
+                    name: `Draft ${new Date().toLocaleDateString()}`,
+                    is_public: isPublic
+                }])
+                .select()
+                .single();
+
+            if (error) {
+                console.error('Error saving draft:', error);
+                alert('Failed to save draft. Check console for details.');
+            } else {
+                setDraftId(data.id);
+                setDraftOwnerId(user.id);
+                const link = `${window.location.origin}/?draft=${data.id}`;
+                navigator.clipboard.writeText(link);
+                alert(`Draft saved successfully!\nLink copied to clipboard:\n${link}`);
+            }
         }
     };
 
@@ -223,6 +252,7 @@ export default function DraftTool() {
     }, []);
 
     const selectChamp = useCallback((champKey, side = currentSide, index = currentSelection) => {
+        if (isReadOnly) return;
         const champ = champions[champKey];
         if (!champ) return;
 
@@ -235,9 +265,10 @@ export default function DraftTool() {
             next[side][index] = champ;
             return next;
         });
-    }, [champions, currentSide, currentSelection, selected]);
+    }, [champions, currentSide, currentSelection, selected, isReadOnly]);
 
     const handleRemove = (side, index) => {
+        if (isReadOnly) return;
         setSelected(prev => {
             const next = { ...prev, [side]: [...prev[side]] };
             next[side][index] = null;
@@ -246,6 +277,7 @@ export default function DraftTool() {
     };
 
     const handleDragStart = (e, payload) => {
+        if (isReadOnly) return;
         e.dataTransfer.setData('payload', JSON.stringify(payload));
         // preload splash art so it's cached by the time the user drops
         if (payload.type === 'champion') {
@@ -256,6 +288,7 @@ export default function DraftTool() {
 
     const handleDrop = (e, targetSide, targetIndex) => {
         e.preventDefault();
+        if (isReadOnly) return;
         let payload;
         try { payload = JSON.parse(e.dataTransfer.getData('payload')); } catch { return; }
 
@@ -294,9 +327,9 @@ export default function DraftTool() {
             <motion.div
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                draggable={!!data}
-                onDragStart={(e) => data && handleDragStart(e, { type: 'slot', side, index })}
-                onClick={() => { setCurrentSide(side); setCurrentSelection(index); }}
+                draggable={!isReadOnly && !!data}
+                onDragStart={(e) => !isReadOnly && data && handleDragStart(e, { type: 'slot', side, index })}
+                onClick={() => { if (!isReadOnly) { setCurrentSide(side); setCurrentSelection(index); } }}
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => handleDrop(e, side, index)}
                 className={`relative cursor-pointer overflow-hidden transition-all duration-300
@@ -322,12 +355,14 @@ export default function DraftTool() {
                                 <p className="font-black text-lg text-white uppercase tracking-tighter italic drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">{data.name || data.id}</p>
                             </div>
                         )}
-                        <button
-                            onClick={(e) => { e.stopPropagation(); handleRemove(side, index); }}
-                            className="absolute top-1 right-1 p-0.5 rounded-full bg-black/60 text-white/50 hover:text-white hover:bg-red-600/80 opacity-0 group-hover:opacity-100 transition-all z-10"
-                        >
-                            <X size={12} />
-                        </button>
+                        {!isReadOnly && (
+                            <button
+                                onClick={(e) => { e.stopPropagation(); handleRemove(side, index); }}
+                                className="absolute top-1 right-1 p-0.5 rounded-full bg-black/60 text-white/50 hover:text-white hover:bg-red-600/80 opacity-0 group-hover:opacity-100 transition-all z-10"
+                            >
+                                <X size={12} />
+                            </button>
+                        )}
                     </div>
                 ) : (
                     <div className="flex items-center justify-center h-full text-white/10">
@@ -440,7 +475,7 @@ export default function DraftTool() {
                                                     initial={{ opacity: 0, y: 5 }}
                                                     animate={{ opacity: 1, y: 0 }}
                                                     exit={{ opacity: 0, y: 5 }}
-                                                    className="absolute right-0 top-full mt-1 w-48 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden shadow-2xl z-50 origin-top-right"
+                                                    className="absolute right-0 top-full w-48 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden shadow-2xl z-50 origin-top-right"
                                                 >
                                                     <div className="p-2">
                                                         <button 
@@ -466,7 +501,7 @@ export default function DraftTool() {
                     </div>
 
                     {/* Search Bar + Action Bar */}
-                    <div className="flex items-center gap-3 w-full">
+                    <div className="flex items-center gap-3 w-full z-20 relative">
                         <div className="relative group flex-1">
                             <div className="absolute -inset-1 bg-gradient-to-r from-blue-600/20 via-amber-500/20 to-red-600/20 rounded-2xl blur opacity-25 group-focus-within:opacity-100 transition-all duration-500" />
                             <div className="relative flex items-center bg-white/5 backdrop-blur-3xl border border-white/10 rounded-2xl overflow-hidden group-focus-within:border-white/20 transition-all">
@@ -504,9 +539,12 @@ export default function DraftTool() {
                         </div>
 
                         {/* ACTION BAR */}
-                        <div className="flex items-center h-14 px-2 rounded-2xl bg-slate-900/80 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.6)] shrink-0">
-                            {/* Reset */}
-                            {[{ icon: RotateCcw, label: 'Reset', onClick: resetDraft, color: 'text-red-400', hover: 'hover:bg-red-500/15 hover:border-red-500/30' }].map(({ icon: Icon, label, onClick, color, hover }) => (
+                        <div className="flex items-center h-14 px-2 rounded-2xl bg-slate-900/80 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.6)] shrink-0 relative">
+                            {/* Reset & Download */}
+                            {[
+                                { icon: RotateCcw, label: 'Reset', onClick: resetDraft, color: 'text-red-400', hover: 'hover:bg-red-500/15 hover:border-red-500/30', hide: isReadOnly },
+                                { icon: Download, label: 'Download', onClick: handleDownload, color: 'text-amber-400', hover: 'hover:bg-amber-500/15 hover:border-amber-500/30' },
+                            ].filter(a => !a.hide).map(({ icon: Icon, label, onClick, color, hover }) => (
                                 <div key={label} className="relative group/btn">
                                     <button onClick={onClick} className={`flex items-center justify-center w-9 h-9 rounded-xl border border-transparent transition-all duration-200 ${hover} ${color}`}>
                                         <Icon size={18} />
@@ -518,24 +556,65 @@ export default function DraftTool() {
                             {/* Divider */}
                             <div className="w-[1px] h-5 bg-white/10 mx-2" />
 
-                            {/* Save, Download, Copy Link, Share */}
-                            {[
-                                { icon: Save,     label: 'Save Draft', onClick: handleSaveDraft, color: 'text-emerald-400', hover: 'hover:bg-emerald-500/15 hover:border-emerald-500/30' },
-                                { icon: Download, label: 'Download',  onClick: handleDownload, color: 'text-amber-400', hover: 'hover:bg-amber-500/15 hover:border-amber-500/30' },
-                                { icon: Link2,    label: 'Copy Link',  onClick: () => navigator.clipboard.writeText(window.location.href), color: 'text-purple-400', hover: 'hover:bg-purple-500/15 hover:border-purple-500/30' },
-                                { icon: Share2,   label: 'Share',      onClick: () => navigator.share?.({ title: 'Draft', url: window.location.href }), color: 'text-blue-400', hover: 'hover:bg-blue-500/15 hover:border-blue-500/30' },
-                            ].map(({ icon: Icon, label, onClick, color, hover }) => (
-                                <div key={label} className="relative group/btn">
-                                    <button onClick={onClick} className={`flex items-center justify-center w-9 h-9 rounded-xl border border-transparent transition-all duration-200 ${hover} ${color}`}>
-                                        <Icon size={18} />
-                                    </button>
-                                    <div className="absolute -top-9 left-1/2 -translate-x-1/2 px-2 py-1 rounded-lg bg-slate-800 border border-white/10 text-[10px] font-black text-white/70 uppercase tracking-widest whitespace-nowrap opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none z-50">{label}</div>
-                                </div>
-                            ))}
+                            {/* Settings Dropdown */}
+                            <div className="relative group/btn" onMouseLeave={() => setIsSettingsOpen(false)}>
+                                <button
+                                    onMouseEnter={() => setIsSettingsOpen(true)}
+                                    onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+                                    className="flex items-center justify-center w-9 h-9 rounded-xl border border-transparent transition-all duration-200 hover:bg-white/10 text-white/70 hover:text-white"
+                                >
+                                    <MoreVertical size={18} />
+                                </button>
+
+                                <AnimatePresence>
+                                    {isSettingsOpen && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                            className="absolute right-0 top-full w-56 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden shadow-2xl z-50 origin-top-right p-2 flex flex-col gap-1"
+                                        >
+                                            {/* Visibility Toggle */}
+                                            {!isReadOnly && (
+                                                <div className="px-2 py-2 mb-1 border-b border-white/10 flex items-center justify-between">
+                                                    <div className="flex items-center gap-2">
+                                                        {isPublic ? <Globe size={14} className="text-emerald-400" /> : <Lock size={14} className="text-amber-400" />}
+                                                        <span className="text-[10px] font-bold uppercase tracking-widest text-white/70">
+                                                            {isPublic ? 'Public' : 'Private'}
+                                                        </span>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => setIsPublic(!isPublic)}
+                                                        className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors ${isPublic ? 'bg-emerald-500' : 'bg-slate-700'}`}
+                                                    >
+                                                        <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${isPublic ? 'translate-x-4' : 'translate-x-1'}`} />
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                            {/* Actions */}
+                                            {[
+                                                { icon: Save, label: 'Save Draft', onClick: handleSaveDraft, color: 'text-emerald-400', hover: 'hover:bg-emerald-500/10 hover:text-emerald-300', hide: isReadOnly },
+                                                { icon: Link2, label: 'Copy Link', onClick: () => navigator.clipboard.writeText(window.location.href), color: 'text-purple-400', hover: 'hover:bg-purple-500/10 hover:text-purple-300' },
+                                                { icon: Share2, label: 'Share', onClick: () => navigator.share?.({ title: 'Draft', url: window.location.href }), color: 'text-blue-400', hover: 'hover:bg-blue-500/10 hover:text-blue-300' },
+                                            ].filter(a => !a.hide).map(({ icon: Icon, label, onClick, color, hover }) => (
+                                                <button
+                                                    key={label}
+                                                    onClick={onClick}
+                                                    className={`w-full flex items-center gap-3 px-3 py-2 text-xs font-bold tracking-widest ${color} ${hover} rounded-lg transition-colors`}
+                                                >
+                                                    <Icon size={14} />
+                                                    {label}
+                                                </button>
+                                            ))}
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
                         </div>
                     </div>
                     
-                    <div className="bg-white/5 border border-white/10 rounded-2xl backdrop-blur-3xl relative overflow-hidden">
+                    <div className="bg-white/5 border border-white/10 rounded-2xl backdrop-blur-3xl relative overflow-hidden z-10">
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
                         <ScrollArea className="h-[680px]">
                             <div className="grid grid-cols-8 gap-2 p-4">
@@ -552,11 +631,11 @@ export default function DraftTool() {
                                                 animate={{ opacity: 1, scale: 1 }}
                                                 exit={{ opacity: 0, scale: 0.9 }}
                                                 key={champ.id}
-                                                draggable={!isUnavailable}
-                                                onDragStart={(e) => handleDragStart(e, { type: 'champion', champKey: key })}
-                                                onClick={() => !isUnavailable && selectChamp(key)}
+                                                draggable={!isUnavailable && !isReadOnly}
+                                                onDragStart={(e) => !isReadOnly && handleDragStart(e, { type: 'champion', champKey: key })}
+                                                onClick={() => !isUnavailable && !isReadOnly && selectChamp(key)}
                                                 className={`relative group cursor-pointer aspect-square rounded-2xl overflow-hidden border-2 transition-all duration-500
-                                                    ${isUnavailable ? 'cursor-not-allowed scale-95 border-transparent' : 'border-white/5 hover:border-amber-400/50 hover:shadow-[0_0_30px_rgba(251,191,36,0.2)] hover:-translate-y-1'}`}
+                                                    ${isUnavailable || isReadOnly ? 'cursor-not-allowed scale-95 border-transparent' : 'border-white/5 hover:border-amber-400/50 hover:shadow-[0_0_30px_rgba(251,191,36,0.2)] hover:-translate-y-1'}`}
                                             >
                                                 <Image
                                                     src={`https://ddragon.leagueoflegends.com/cdn/${PATCH_NO}/img/champion/${champ.id}.png`}
