@@ -58,7 +58,7 @@ export default function Bidding() {
   }
 
   return (
-    <div className="min-h-screen pt-32 pb-20 px-6 bg-[#020617] bg-[radial-gradient(circle_at_bottom_left,_var(--tw-gradient-stops))] from-blue-900/20 via-[#020617] to-black">
+    <div className="min-h-screen pt-12 pb-20 px-6 bg-[#020617] bg-[radial-gradient(circle_at_bottom_left,_var(--tw-gradient-stops))] from-blue-900/20 via-[#020617] to-black">
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12">
         
         {/* Left Column: Player Card */}

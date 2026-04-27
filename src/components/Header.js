@@ -1,106 +1,139 @@
 'use client'
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import React from 'react';
 import { motion } from 'framer-motion';
-import { LayoutDashboard, Users, Gavel, Sword, Menu, X } from 'lucide-react';
+import { LogIn, LogOut, Sword, ChevronDown, User, Settings, Shield } from 'lucide-react';
+import { 
+    DropdownMenu, 
+    DropdownMenuContent, 
+    DropdownMenuItem, 
+    DropdownMenuLabel, 
+    DropdownMenuSeparator, 
+    DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
+import {
+    Menubar,
+    MenubarContent,
+    MenubarItem,
+    MenubarMenu,
+    MenubarSeparator,
+    MenubarShortcut,
+    MenubarTrigger,
+} from "@/components/ui/menubar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 
-const navigation = [
-  { name: 'Draft', href: '/', icon: Sword },
-  { name: 'Bidding', href: '/bid', icon: Gavel },
-  { name: 'Players', href: '/players', icon: Users },
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-];
+export default function Header({ 
+    user, 
+    onLogout, 
+    onLoginClick, 
+    draftMode, 
+    setDraftMode 
+}) {
+    return (
+        <header className="z-[100] py-2">
+            <nav className="max-w-[1800px] mx-auto px-4 lg:px-8 h-14 flex items-center justify-between">
+                {/* LOGO */}
+                <div className="flex items-center gap-2 lg:gap-3">
+                    <div className="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-lg lg:rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 shrink-0">
+                        <Sword className="text-white w-5 h-5 lg:w-6 lg:h-6" />
+                    </div>
+                    <h1 className="text-xl lg:text-2xl font-black italic tracking-tighter text-white uppercase">
+                        Champion <span className="text-amber-400">Draft</span>
+                    </h1>
+                </div>
 
-export default function Header() {
-  const [isOpen, setIsOpen] = useState(false);
-  // Note: usePathname might not work if this is rendered via React Router in index.js, 
-  // but I'll stick to a modern implementation that works for both if possible.
-  const pathname = typeof window !== 'undefined' ? window.location.pathname : '/';
+                {/* NAV & LOGIN */}
+                <div className="flex items-center gap-3 lg:gap-8">
+                    <div className="hidden sm:flex items-center">
+                        <Menubar className="bg-transparent border-none shadow-none">
+                            <MenubarMenu>
+                                <MenubarTrigger 
+                                    onClick={() => setDraftMode('Draft')}
+                                    className={draftMode === 'Draft' ? 'text-amber-400' : 'text-white/30'}
+                                >
+                                    Draft
+                                </MenubarTrigger>
+                            </MenubarMenu>
+                            <MenubarMenu>
+                                <MenubarTrigger 
+                                    disabled
+                                    className="text-white/10"
+                                >
+                                    Fearless <span className="ml-1 text-[8px] normal-case tracking-normal opacity-50">(soon)</span>
+                                </MenubarTrigger>
+                                <MenubarContent>
+                                    <MenubarItem disabled>
+                                        Classic Fearless
+                                    </MenubarItem>
+                                    <MenubarItem disabled>
+                                        Hardcore Fearless
+                                    </MenubarItem>
+                                </MenubarContent>
+                            </MenubarMenu>
+                        </Menubar>
+                    </div>
 
-  return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-[#020617]/80 backdrop-blur-xl border-b border-white/10">
-      <nav className="max-w-[1800px] mx-auto px-6 h-20 flex items-center justify-between">
-        <div className="flex items-center gap-8">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
-              <Sword className="text-white w-6 h-6" />
-            </div>
-            <span className="text-xl font-black italic tracking-tighter text-white">
-              ARENA<span className="text-blue-500">PRO</span>
-            </span>
-          </Link>
+                    <div className="h-6 w-[1px] bg-white/10" />
 
-          <div className="hidden md:flex items-center gap-1">
-            {navigation.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`relative px-4 py-2 text-sm font-bold tracking-widest uppercase transition-colors
-                    ${isActive ? 'text-white' : 'text-slate-400 hover:text-white'}`}
-                >
-                  <span className="relative z-10 flex items-center gap-2">
-                    <item.icon size={16} />
-                    {item.name}
-                  </span>
-                  {isActive && (
-                    <motion.div
-                      layoutId="nav-glow"
-                      className="absolute inset-0 bg-blue-500/10 rounded-lg border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.2)]"
-                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                    />
-                  )}
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <button className="hidden md:flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded-lg transition-all">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            <span className="text-xs font-bold text-slate-300">SERVER ONLINE</span>
-          </button>
-          
-          <button 
-            className="md:hidden text-white"
-            onClick={() => setIsOpen(!isOpen)}
-          >
-            {isOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
-      </nav>
-
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-slate-900 border-b border-white/10 overflow-hidden"
-          >
-            <div className="px-6 py-4 space-y-2">
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors font-bold tracking-widest uppercase text-sm"
-                  onClick={() => setIsOpen(false)}
-                >
-                  <item.icon size={18} />
-                  {item.name}
-                </Link>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </header>
-  );
+                    {/* USER MENU - Using Shadcn DropdownMenu */}
+                    <div className="relative">
+                        {user ? (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <button className="flex items-center gap-3 text-xs font-black uppercase text-white/50 hover:text-white transition-colors tracking-[0.2em] cursor-pointer pl-2 pr-1 py-1 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 outline-none">
+                                        <Avatar className="w-6 h-6 border border-white/10">
+                                            <AvatarFallback className="bg-amber-400 text-slate-900 font-black text-[10px]">
+                                                {user.email?.[0].toUpperCase()}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <span className="hidden sm:inline">{user.email?.split('@')[0]}</span>
+                                        <ChevronDown size={14} className="opacity-50" />
+                                    </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-56 mt-2">
+                                    <DropdownMenuLabel>
+                                        <div className="flex flex-col space-y-1">
+                                            <p className="text-[10px] text-white/30 font-bold uppercase tracking-widest">Logged in as</p>
+                                            <p className="text-xs font-black text-white truncate">{user.email}</p>
+                                        </div>
+                                    </DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem>
+                                        <User size={14} className="mr-2 opacity-70" />
+                                        <span>Profile</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem>
+                                        <Settings size={14} className="mr-2 opacity-70" />
+                                        <span>Settings</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem>
+                                        <Shield size={14} className="mr-2 opacity-70" />
+                                        <span>My Drafts</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem 
+                                        onClick={onLogout}
+                                        className="text-red-400 focus:bg-red-500/10 focus:text-red-400"
+                                    >
+                                        <LogOut size={14} className="mr-2" />
+                                        <span>Logout</span>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        ) : (
+                            <Button 
+                                variant="ghost" 
+                                onClick={onLoginClick} 
+                                className="h-auto px-0 py-2 text-xs font-black uppercase tracking-[0.2em] text-white/50 hover:text-white hover:bg-transparent transition-colors flex items-center gap-2"
+                            >
+                                <LogIn size={16} />
+                                Login
+                            </Button>
+                        )}
+                    </div>
+                </div>
+            </nav>
+        </header>
+    );
 }
-
-import { AnimatePresence } from 'framer-motion';

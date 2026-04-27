@@ -2,6 +2,15 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Button } from "@/components/ui/button";
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuLabel,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { Search, Ban, Shield, X, Command, Check, RotateCcw, Download, Share2, Link2, Save, LogIn, LogOut, MoreVertical, Globe, Lock } from 'lucide-react';
 import html2canvas from 'html2canvas';
 
@@ -11,6 +20,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { PATCH_NO } from '@/lib/const';
 
 import { createClient } from '@/lib/supabaseClient';
+
+import Header from '@/components/Header';
 
 export default function DraftTool() {
     const supabase = createClient();
@@ -23,7 +34,6 @@ export default function DraftTool() {
 
     // Auth Modal State
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-    const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
     // Action Bar State
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -382,14 +392,19 @@ export default function DraftTool() {
     }
 
     return (
-        <div ref={pageRef} className="min-h-screen bg-[#020617] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-[#020617] to-black text-slate-200 px-8 py-4 relative">
-            
+        <div ref={pageRef} className="min-h-screen bg-[#020617] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-[#020617] to-black text-slate-200 relative">
+            <Header 
+                user={user} 
+                onLogout={handleLogout} 
+                onLoginClick={() => setIsAuthModalOpen(true)}
+                draftMode={draftMode}
+                setDraftMode={setDraftMode}
+            />
 
-
-            <div className="max-w-[1600px] mx-auto grid grid-cols-8 gap-6 pt-12">
+            <div className="max-w-[1800px] mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 pt-4 px-4 md:px-8 pb-12">
                 
                 {/* BLUE SIDE */}
-                <div ref={blueRef} className="col-span-2 space-y-6">
+                <div ref={blueRef} className="md:col-span-3 order-2 md:order-1 space-y-6">
                     <div className="space-y-3">
                         <h2 className="text-2xl font-black italic tracking-tighter text-blue-400 uppercase">Blue Team</h2>
                         <div className="flex items-center justify-between w-full">
@@ -418,84 +433,10 @@ export default function DraftTool() {
                 </div>
 
                 {/* CHAMPION SELECTION */}
-                <div className="col-span-4 space-y-4">
-
-                    {/* Title + Mode Nav */}
-                    <div className="flex flex-col items-start gap-4">
-                        <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase">
-                            Champion <span className="text-amber-400">Draft</span>
-                        </h1>
-                        <div className="relative flex items-center gap-8 border-b border-white/10 w-full justify-start min-h-[40px]">
-                            {[
-                                { label: 'Draft', disabled: false },
-                                { label: 'Fearless Draft', disabled: true },
-                            ].map(({ label, disabled }) => (
-                                <button
-                                    key={label}
-                                    onClick={() => !disabled && setDraftMode(label)}
-                                    disabled={disabled}
-                                    className={`relative pb-3 text-sm font-black uppercase tracking-[0.2em] transition-colors duration-200 flex items-center gap-2
-                                        ${disabled ? 'text-white/20 cursor-not-allowed' : draftMode === label ? 'text-amber-400' : 'text-white/30 hover:text-white/60'}`}
-                                >
-                                    {label}
-                                    {disabled && <span className="text-[10px] font-bold normal-case tracking-normal text-white/20">(in progress)</span>}
-                                    {!disabled && draftMode === label && (
-                                        <motion.div
-                                            layoutId="nav-indicator"
-                                            className="absolute bottom-0 left-0 right-0 h-[2px] bg-amber-400 rounded-full"
-                                        />
-                                    )}
-                                </button>
-                            ))}
-                            
-                            {/* Login on the right side of nav menu */}
-                            <div className="absolute right-2 bottom-0 flex items-center pb-2">
-                                {user ? (
-                                    <div className="relative flex items-center h-full" onMouseLeave={() => setIsUserMenuOpen(false)}>
-                                        <button 
-                                            onMouseEnter={() => setIsUserMenuOpen(true)}
-                                            onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                                            className="flex items-center gap-2 text-xs font-black uppercase text-white/50 hover:text-white transition-colors tracking-[0.2em] cursor-pointer px-2 py-1 rounded-md hover:bg-white/5"
-                                        >
-                                            <div className="w-5 h-5 rounded-full bg-amber-400 text-slate-900 flex items-center justify-center font-black">
-                                                {user.email?.[0].toUpperCase()}
-                                            </div>
-                                            {user.email}
-                                        </button>
-                                        
-                                        <AnimatePresence>
-                                            {isUserMenuOpen && (
-                                                <motion.div
-                                                    initial={{ opacity: 0, y: 5 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    exit={{ opacity: 0, y: 5 }}
-                                                    className="absolute right-0 top-full w-48 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden shadow-2xl z-50 origin-top-right"
-                                                >
-                                                    <div className="p-2">
-                                                        <button 
-                                                            onClick={handleLogout} 
-                                                            className="w-full flex items-center gap-2 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-lg transition-colors"
-                                                        >
-                                                            <LogOut size={14} />
-                                                            Logout
-                                                        </button>
-                                                    </div>
-                                                </motion.div>
-                                            )}
-                                        </AnimatePresence>
-                                    </div>
-                                ) : (
-                                    <button onClick={() => setIsAuthModalOpen(true)} className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-white/50 hover:text-white transition-colors pb-1">
-                                        <LogIn size={14} />
-                                        Login
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                    </div>
+                <div className="md:col-span-6 order-1 md:order-2 space-y-4">
 
                     {/* Search Bar + Action Bar */}
-                    <div className="flex items-center gap-3 w-full z-20 relative">
+                    <div className="flex flex-col md:flex-row items-center gap-3 w-full z-20 relative">
                         <div className="relative group flex-1">
                             <div className="absolute -inset-1 bg-gradient-to-r from-blue-600/20 via-amber-500/20 to-red-600/20 rounded-2xl blur opacity-25 group-focus-within:opacity-100 transition-all duration-500" />
                             <div className="relative flex items-center bg-white/5 backdrop-blur-3xl border border-white/10 rounded-2xl overflow-hidden group-focus-within:border-white/20 transition-all">
@@ -532,86 +473,80 @@ export default function DraftTool() {
                             </div>
                         </div>
 
-                        {/* ACTION BAR */}
-                        <div className="flex items-center h-14 px-2 rounded-2xl bg-slate-900/80 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.6)] shrink-0 relative">
-                            {/* Reset & Download */}
-                            {[
-                                { icon: RotateCcw, label: 'Reset', onClick: resetDraft, color: 'text-red-400', hover: 'hover:bg-red-500/15 hover:border-red-500/30', hide: isReadOnly },
-                                { icon: Download, label: 'Download', onClick: handleDownload, color: 'text-amber-400', hover: 'hover:bg-amber-500/15 hover:border-amber-500/30' },
-                            ].filter(a => !a.hide).map(({ icon: Icon, label, onClick, color, hover }) => (
-                                <div key={label} className="relative group/btn">
-                                    <button onClick={onClick} className={`flex items-center justify-center w-9 h-9 rounded-xl border border-transparent transition-all duration-200 ${hover} ${color}`}>
-                                        <Icon size={18} />
-                                    </button>
-                                    <div className="absolute -top-9 left-1/2 -translate-x-1/2 px-2 py-1 rounded-lg bg-slate-800 border border-white/10 text-[10px] font-black text-white/70 uppercase tracking-widest whitespace-nowrap opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none z-50">{label}</div>
-                                </div>
-                            ))}
-
-                            {/* Divider */}
-                            <div className="w-[1px] h-5 bg-white/10 mx-2" />
-
-                            {/* Settings Dropdown */}
-                            <div className="relative group/btn" onMouseLeave={() => setIsSettingsOpen(false)}>
-                                <button
-                                    onMouseEnter={() => setIsSettingsOpen(true)}
-                                    onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-                                    className="flex items-center justify-center w-9 h-9 rounded-xl border border-transparent transition-all duration-200 hover:bg-white/10 text-white/70 hover:text-white"
+                        {/* ACTION BAR - Using Shadcn UI components */}
+                        <div className="flex items-center justify-center gap-2 p-1.5 rounded-2xl bg-slate-900/80 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.6)] shrink-0 relative w-full md:w-auto">
+                            {!isReadOnly && (
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={resetDraft}
+                                    className="w-10 h-10 rounded-xl text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all"
                                 >
-                                    <MoreVertical size={18} />
-                                </button>
+                                    <RotateCcw size={18} />
+                                </Button>
+                            )}
+                            
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={handleDownload}
+                                className="w-10 h-10 rounded-xl text-amber-400 hover:bg-amber-500/10 hover:text-amber-300 transition-all"
+                            >
+                                <Download size={18} />
+                            </Button>
 
-                                <AnimatePresence>
-                                    {isSettingsOpen && (
-                                        <motion.div
-                                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                            className="absolute right-0 top-full w-56 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden shadow-2xl z-50 origin-top-right p-2 flex flex-col gap-1"
-                                        >
-                                            {/* Visibility Toggle */}
-                                            {!isReadOnly && (
-                                                <div className="px-2 py-2 mb-1 border-b border-white/10 flex items-center justify-between">
-                                                    <div className="flex items-center gap-2">
-                                                        {isPublic ? <Globe size={14} className="text-emerald-400" /> : <Lock size={14} className="text-amber-400" />}
-                                                        <span className="text-[10px] font-bold uppercase tracking-widest text-white/70">
-                                                            {isPublic ? 'Public' : 'Private'}
-                                                        </span>
-                                                    </div>
-                                                    <button
-                                                        onClick={() => setIsPublic(!isPublic)}
-                                                        className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors ${isPublic ? 'bg-emerald-500' : 'bg-slate-700'}`}
-                                                    >
-                                                        <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${isPublic ? 'translate-x-4' : 'translate-x-1'}`} />
-                                                    </button>
+                            <div className="w-[1px] h-5 bg-white/10 mx-1" />
+
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="w-10 h-10 rounded-xl text-white/70 hover:bg-white/10 hover:text-white transition-all"
+                                    >
+                                        <MoreVertical size={18} />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-56 mt-2">
+                                    {!isReadOnly && (
+                                        <>
+                                            <DropdownMenuLabel>Draft Visibility</DropdownMenuLabel>
+                                            <DropdownMenuItem 
+                                                onClick={() => setIsPublic(!isPublic)}
+                                                className="flex items-center justify-between"
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    {isPublic ? <Globe size={14} className="text-emerald-400" /> : <Lock size={14} className="text-amber-400" />}
+                                                    <span>{isPublic ? 'Public' : 'Private'}</span>
                                                 </div>
-                                            )}
-
-                                            {/* Actions */}
-                                            {[
-                                                { icon: Save, label: 'Save Draft', onClick: handleSaveDraft, color: 'text-emerald-400', hover: 'hover:bg-emerald-500/10 hover:text-emerald-300', hide: isReadOnly },
-                                                { icon: Link2, label: 'Copy Link', onClick: () => navigator.clipboard.writeText(window.location.href), color: 'text-purple-400', hover: 'hover:bg-purple-500/10 hover:text-purple-300' },
-                                                { icon: Share2, label: 'Share', onClick: () => navigator.share?.({ title: 'Draft', url: window.location.href }), color: 'text-blue-400', hover: 'hover:bg-blue-500/10 hover:text-blue-300' },
-                                            ].filter(a => !a.hide).map(({ icon: Icon, label, onClick, color, hover }) => (
-                                                <button
-                                                    key={label}
-                                                    onClick={onClick}
-                                                    className={`w-full flex items-center gap-3 px-3 py-2 text-xs font-bold tracking-widest ${color} ${hover} rounded-lg transition-colors`}
-                                                >
-                                                    <Icon size={14} />
-                                                    {label}
-                                                </button>
-                                            ))}
-                                        </motion.div>
+                                                <div className={`w-8 h-4 rounded-full transition-colors ${isPublic ? 'bg-emerald-500' : 'bg-slate-700'} relative`}>
+                                                    <div className={`absolute top-0.5 h-3 w-3 rounded-full bg-white transition-all ${isPublic ? 'left-4.5' : 'left-0.5'}`} />
+                                                </div>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem onClick={handleSaveDraft} className="text-emerald-400 focus:text-emerald-300">
+                                                <Save size={14} className="mr-2" />
+                                                Save Draft
+                                            </DropdownMenuItem>
+                                        </>
                                     )}
-                                </AnimatePresence>
-                            </div>
+                                    <DropdownMenuItem onClick={() => navigator.clipboard.writeText(window.location.href)}>
+                                        <Link2 size={14} className="mr-2 opacity-70" />
+                                        Copy Link
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => navigator.share?.({ title: 'Draft', url: window.location.href })}>
+                                        <Share2 size={14} className="mr-2 opacity-70" />
+                                        Share
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
                     </div>
                     
                     <div className="bg-white/5 border border-white/10 rounded-2xl backdrop-blur-3xl relative overflow-hidden z-10">
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
-                        <ScrollArea className="h-[680px]">
-                            <div className="grid grid-cols-8 gap-2 p-4">
+                        <ScrollArea className="h-[500px] md:h-[600px] lg:h-[680px]">
+                            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2 p-4">
                                 <AnimatePresence mode='popLayout'>
                                     {filteredChampions.map(([key, champ]) => {
                                         const isBanned = [...selected.blueBan, ...selected.redBan].some(s => s?.id === champ.id);
@@ -674,7 +609,7 @@ export default function DraftTool() {
                 </div>
 
                 {/* RED SIDE */}
-                <div ref={redRef} className="col-span-2 space-y-6">
+                <div ref={redRef} className="md:col-span-3 order-3 md:order-3 space-y-6">
                     <div className="space-y-3 text-right">
                         <h2 className="text-2xl font-black italic tracking-tighter text-red-400 uppercase">Red Team</h2>
                         <div className="flex items-center justify-between w-full">
