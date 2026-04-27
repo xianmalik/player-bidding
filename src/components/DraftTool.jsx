@@ -177,7 +177,11 @@ export default function DraftTool() {
             // Update existing draft
             const { error } = await supabase
                 .from('drafts')
-                .update({ draft_data: minimalDraftData, is_public: isPublic })
+                .update({ 
+                    draft_data: minimalDraftData, 
+                    name: draftTitle || `Draft ${new Date().toLocaleDateString()}`,
+                    is_public: isPublic 
+                })
                 .eq('id', draftId);
 
             if (error) {
@@ -193,7 +197,7 @@ export default function DraftTool() {
                 .insert([{ 
                     user_id: user.id, 
                     draft_data: minimalDraftData,
-                    name: `Draft ${new Date().toLocaleDateString()}`,
+                    name: draftTitle || `Draft ${new Date().toLocaleDateString()}`,
                     is_public: isPublic
                 }])
                 .select()

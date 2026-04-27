@@ -9,6 +9,7 @@ const fontSans = FontSans({
 const font = FontSans({ subsets: ["latin"] });
 
 import { Toaster } from "@/components/ui/sonner"
+import ChampionDataProvider from "@/components/ChampionDataProvider"
 
 export default function RootLayout({
   children,
@@ -18,8 +19,10 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={font.className}>
-        {children}
-        <Toaster />
+        <ChampionDataProvider>
+          {children}
+          <Toaster />
+        </ChampionDataProvider>
       </body>
     </html>
   )
