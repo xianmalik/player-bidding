@@ -11,7 +11,7 @@ import {
     DropdownMenuItem,
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { Search, Ban, Shield, X, Command, Check, RotateCcw, Download, Share2, Link2, Save, LogIn, LogOut, MoreVertical, Globe, Lock } from 'lucide-react';
+import { Search, Ban, Shield, X, Command, Check, RotateCcw, Download, Share2, Link2, Save, LogIn, LogOut, MoreVertical, Globe, Lock, Pencil } from 'lucide-react';
 import html2canvas from 'html2canvas';
 
 import Image from 'next/image';
@@ -31,6 +31,14 @@ export default function DraftTool() {
     const [draftOwnerId, setDraftOwnerId] = useState(null);
     
     const isReadOnly = Boolean(draftId && user?.id !== draftOwnerId);
+
+    // Team Names State
+    const [blueTeamName, setBlueTeamName] = useState('Blue Team');
+    const [redTeamName, setRedTeamName] = useState('Red Team');
+    const [draftTitle, setDraftTitle] = useState('Game 1');
+    const [isEditingBlue, setIsEditingBlue] = useState(false);
+    const [isEditingRed, setIsEditingRed] = useState(false);
+    const [isEditingTitle, setIsEditingTitle] = useState(false);
 
     // Auth Modal State
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -92,6 +100,9 @@ export default function DraftTool() {
                         setSelected(data.draft_data);
                         setDraftOwnerId(data.user_id);
                         setIsPublic(data.is_public);
+                        if (data.draft_data.blueTeamName) setBlueTeamName(data.draft_data.blueTeamName);
+                        if (data.draft_data.redTeamName) setRedTeamName(data.draft_data.redTeamName);
+                        if (data.draft_data.draftTitle) setDraftTitle(data.draft_data.draftTitle);
                     } else if (error) {
                         console.error('Error fetching draft:', error);
                         alert('Draft not found or is private.');
@@ -153,7 +164,10 @@ export default function DraftTool() {
             blueBan: selected.blueBan.map(stripChamp),
             redBan: selected.redBan.map(stripChamp),
             blue: selected.blue.map(stripChamp),
-            red: selected.red.map(stripChamp)
+            red: selected.red.map(stripChamp),
+            blueTeamName,
+            redTeamName,
+            draftTitle
         };
 
         if (draftId && user.id === draftOwnerId) {
@@ -234,6 +248,9 @@ export default function DraftTool() {
             blue: Array(5).fill(null),
             red: Array(5).fill(null)
         });
+        setBlueTeamName('Blue Team');
+        setRedTeamName('Red Team');
+        setDraftTitle('Game 1');
         setCurrentSide('blue');
         setCurrentSelection(0);
         setSearchTerm('');
@@ -344,12 +361,19 @@ export default function DraftTool() {
                 onDrop={(e) => handleDrop(e, side, index)}
                 className={`relative cursor-pointer overflow-hidden transition-all duration-300
                     ${isBan ? 'w-16 h-16 rounded-md' : `h-32 w-full rounded-xl`}
-                    ${isActive ? (isBlue ? 'ring-2 ring-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.5)]' : 'ring-2 ring-red-500 shadow-[0_0_20px_rgba(239,68,68,0.5)]') : 'opacity-80'}
+                    ${isActive ? (isBlue ? 'ring-2 ring-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.3)]' : 'ring-2 ring-red-500 shadow-[0_0_20px_rgba(239,68,68,0.3)]') : 'opacity-80'}
                     bg-gray-800/40 backdrop-blur-md border border-white/10 group`}
             >
+                {/* Active Indicator Bar */}
+                {isActive && (
+                    <motion.div
+                        layoutId={`indicator-${side}-${index}`}
+                        className={`absolute ${isBlue ? 'left-0' : 'right-0'} top-0 bottom-0 w-1.5 ${isBlue ? 'bg-blue-500 shadow-[4px_0_15px_rgba(59,130,246,0.5)]' : 'bg-red-500 shadow-[-4px_0_15px_rgba(239,68,68,0.5)]'} z-20`}
+                    />
+                )}
+
                 {data ? (
                     <div className="relative w-full h-full">
-                        {/* bg-image instead of img so html2canvas renders cover correctly */}
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -361,14 +385,16 @@ export default function DraftTool() {
                             className="w-full h-full transition-transform duration-700 group-hover:scale-110"
                         />
                         {!isBan && (
-                            <div className={`absolute inset-0 bg-gradient-to-t ${isBlue ? 'from-blue-950/90 via-blue-900/20' : 'from-red-950/90 via-red-900/20'} to-transparent flex flex-col justify-end p-3`}>
-                                <p className="font-black text-lg text-white uppercase tracking-tighter italic drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">{data.name || data.id}</p>
+                            <div className={`absolute inset-0 bg-gradient-to-t ${isBlue ? 'from-blue-950/90 via-blue-900/20' : 'from-red-950/90 via-red-900/20'} to-transparent flex flex-col justify-end p-3 ${!isBlue ? 'items-end' : 'items-start'}`}>
+                                <p className={`font-black text-lg text-white uppercase tracking-tighter italic drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] ${!isBlue ? 'text-right' : 'text-left'}`}>
+                                    {data.name || data.id}
+                                </p>
                             </div>
                         )}
                         {!isReadOnly && (
                             <button
                                 onClick={(e) => { e.stopPropagation(); handleRemove(side, index); }}
-                                className="absolute top-1 right-1 p-0.5 rounded-full bg-black/60 text-white/50 hover:text-white hover:bg-red-600/80 opacity-0 group-hover:opacity-100 transition-all z-10"
+                                className={`absolute top-1 ${isBlue ? 'right-1' : 'left-1'} p-1 rounded-full bg-black/60 text-white/50 hover:text-white hover:bg-red-600/80 opacity-0 group-hover:opacity-100 transition-all z-10`}
                             >
                                 <X size={12} />
                             </button>
@@ -406,8 +432,31 @@ export default function DraftTool() {
                 {/* BLUE SIDE */}
                 <div ref={blueRef} className="md:col-span-3 order-2 md:order-1 space-y-6 flex flex-col">
                     <div className="space-y-3 shrink-0">
-
-                        <h2 className="text-2xl font-black italic tracking-tighter text-blue-400 uppercase">Blue Team</h2>
+                        {isEditingBlue && !isReadOnly ? (
+                            <input
+                                autoFocus
+                                value={blueTeamName}
+                                onChange={(e) => setBlueTeamName(e.target.value)}
+                                onBlur={() => setIsEditingBlue(false)}
+                                onKeyDown={(e) => e.key === 'Enter' && setIsEditingBlue(false)}
+                                className="w-full bg-white/5 border-b border-blue-500 outline-none text-2xl font-black italic tracking-tighter text-blue-400 uppercase placeholder:text-blue-400/50 px-2 py-1 rounded-t-md"
+                                placeholder="Blue Team"
+                            />
+                        ) : (
+                            <div className="flex items-center group gap-2">
+                                <h2 className="text-2xl font-black italic tracking-tighter text-blue-400 uppercase">
+                                    {blueTeamName}
+                                </h2>
+                                {!isReadOnly && (
+                                    <button
+                                        onClick={() => setIsEditingBlue(true)}
+                                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-white/5 rounded-md text-blue-400/50 hover:text-blue-400"
+                                    >
+                                        <Pencil size={16} />
+                                    </button>
+                                )}
+                            </div>
+                        )}
                         <div className="flex items-center justify-between w-full">
                             <div className="grid grid-cols-3 gap-2">
                                 {[0,1,2].map(i => <Slot key={i} side="blueBan" index={i} type="ban" />)}
@@ -435,6 +484,34 @@ export default function DraftTool() {
 
                 {/* CHAMPION SELECTION */}
                 <div className="md:col-span-6 order-1 md:order-2 flex flex-col gap-4">
+
+                    {/* Draft Title Section */}
+                    <div className="flex items-center justify-center">
+                        {isEditingTitle && !isReadOnly ? (
+                            <input
+                                autoFocus
+                                value={draftTitle}
+                                onChange={(e) => setDraftTitle(e.target.value)}
+                                onBlur={() => setIsEditingTitle(false)}
+                                onKeyDown={(e) => e.key === 'Enter' && setIsEditingTitle(false)}
+                                className="bg-transparent border-b border-amber-400 outline-none text-2xl font-black italic tracking-widest text-white uppercase text-center px-4"
+                            />
+                        ) : (
+                            <div className="flex items-center group gap-3">
+                                <h2 className="text-2xl font-black italic tracking-widest text-white uppercase">
+                                    {draftTitle}
+                                </h2>
+                                {!isReadOnly && (
+                                    <button
+                                        onClick={() => setIsEditingTitle(true)}
+                                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-white/5 rounded-md text-white/30 hover:text-white"
+                                    >
+                                        <Pencil size={18} />
+                                    </button>
+                                )}
+                            </div>
+                        )}
+                    </div>
 
                     {/* Search Bar + Action Bar */}
                     <div className="flex flex-col md:flex-row items-center gap-3 w-full z-20 relative">
@@ -477,25 +554,26 @@ export default function DraftTool() {
                         {/* ACTION BAR - Using Shadcn UI components */}
                         <div className="flex items-center justify-center gap-2 p-1.5 rounded-2xl bg-slate-900/80 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.6)] shrink-0 relative w-full md:w-auto">
                             {!isReadOnly && (
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={resetDraft}
-                                    className="w-10 h-10 rounded-xl text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all"
-                                >
-                                    <RotateCcw size={18} />
-                                </Button>
+                                <>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={resetDraft}
+                                        className="w-10 h-10 rounded-xl text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all"
+                                    >
+                                        <RotateCcw size={18} />
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={handleSaveDraft}
+                                        className="w-10 h-10 rounded-xl text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300 transition-all"
+                                    >
+                                        <Save size={18} />
+                                    </Button>
+                                </>
                             )}
                             
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={handleDownload}
-                                className="w-10 h-10 rounded-xl text-amber-400 hover:bg-amber-500/10 hover:text-amber-300 transition-all"
-                            >
-                                <Download size={18} />
-                            </Button>
-
                             <div className="w-[1px] h-5 bg-white/10 mx-1" />
 
                             <DropdownMenu>
@@ -508,43 +586,56 @@ export default function DraftTool() {
                                         <MoreVertical size={18} />
                                     </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-56 mt-2">
+                                <DropdownMenuContent align="end" className="w-56 mt-2 bg-slate-900/95 backdrop-blur-2xl border-white/10 p-2">
+                                    <DropdownMenuItem onClick={handleDownload} className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-white/5 transition-colors group">
+                                        <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400 group-hover:bg-amber-500 group-hover:text-slate-900 transition-all">
+                                            <Download size={16} />
+                                        </div>
+                                        <span className="font-bold text-xs uppercase tracking-widest">Download PNG</span>
+                                    </DropdownMenuItem>
+
                                     {!isReadOnly && (
                                         <>
-                                            <DropdownMenuLabel>Draft Visibility</DropdownMenuLabel>
+                                            <DropdownMenuSeparator className="bg-white/5 my-2" />
+                                            <DropdownMenuLabel className="text-[10px] text-white/20 px-3 py-1">Visibility</DropdownMenuLabel>
                                             <DropdownMenuItem 
                                                 onClick={() => setIsPublic(!isPublic)}
-                                                className="flex items-center justify-between"
+                                                className="flex items-center justify-between p-3 rounded-xl cursor-pointer hover:bg-white/5 transition-colors group"
                                             >
-                                                <div className="flex items-center gap-2">
-                                                    {isPublic ? <Globe size={14} className="text-emerald-400" /> : <Lock size={14} className="text-amber-400" />}
-                                                    <span>{isPublic ? 'Public' : 'Private'}</span>
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`p-2 rounded-lg transition-all ${isPublic ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}`}>
+                                                        {isPublic ? <Globe size={16} /> : <Lock size={16} />}
+                                                    </div>
+                                                    <span className="font-bold text-xs uppercase tracking-widest">{isPublic ? 'Public' : 'Private'}</span>
                                                 </div>
                                                 <div className={`w-8 h-4 rounded-full transition-colors ${isPublic ? 'bg-emerald-500' : 'bg-slate-700'} relative`}>
                                                     <div className={`absolute top-0.5 h-3 w-3 rounded-full bg-white transition-all ${isPublic ? 'left-4.5' : 'left-0.5'}`} />
                                                 </div>
                                             </DropdownMenuItem>
-                                            <DropdownMenuSeparator />
-                                            <DropdownMenuItem onClick={handleSaveDraft} className="text-emerald-400 focus:text-emerald-300">
-                                                <Save size={14} className="mr-2" />
-                                                Save Draft
-                                            </DropdownMenuItem>
                                         </>
                                     )}
-                                    <DropdownMenuItem onClick={() => navigator.clipboard.writeText(window.location.href)}>
-                                        <Link2 size={14} className="mr-2 opacity-70" />
-                                        Copy Link
+
+                                    <DropdownMenuSeparator className="bg-white/5 my-2" />
+                                    
+                                    <DropdownMenuItem onClick={() => navigator.clipboard.writeText(window.location.href)} className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-white/5 transition-colors group">
+                                        <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400 group-hover:bg-purple-500 group-hover:text-white transition-all">
+                                            <Link2 size={16} />
+                                        </div>
+                                        <span className="font-bold text-xs uppercase tracking-widest">Copy Link</span>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => navigator.share?.({ title: 'Draft', url: window.location.href })}>
-                                        <Share2 size={14} className="mr-2 opacity-70" />
-                                        Share
+
+                                    <DropdownMenuItem onClick={() => navigator.share?.({ title: 'Draft', url: window.location.href })} className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-white/5 transition-colors group">
+                                        <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-all">
+                                            <Share2 size={16} />
+                                        </div>
+                                        <span className="font-bold text-xs uppercase tracking-widest">Share Draft</span>
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>
                     </div>
                     
-                    <div className="bg-white/5 border border-white/10 rounded-2xl backdrop-blur-3xl relative overflow-hidden z-10 flex-1 flex flex-col max-h-[800px]">
+                    <div className="bg-white/5 border border-white/10 rounded-2xl backdrop-blur-3xl relative overflow-hidden z-10 flex-1 flex flex-col max-h-[740px]">
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
                         <ScrollArea className="flex-1 w-full">
                             <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2 p-4">
@@ -612,7 +703,31 @@ export default function DraftTool() {
                 {/* RED SIDE */}
                 <div ref={redRef} className="md:col-span-3 order-3 md:order-3 space-y-6 flex flex-col">
                     <div className="space-y-3 text-right shrink-0">
-                        <h2 className="text-2xl font-black italic tracking-tighter text-red-400 uppercase">Red Team</h2>
+                        {isEditingRed && !isReadOnly ? (
+                            <input
+                                autoFocus
+                                value={redTeamName}
+                                onChange={(e) => setRedTeamName(e.target.value)}
+                                onBlur={() => setIsEditingRed(false)}
+                                onKeyDown={(e) => e.key === 'Enter' && setIsEditingRed(false)}
+                                className="w-full bg-white/5 border-b border-red-500 outline-none text-2xl font-black italic tracking-tighter text-red-400 uppercase text-right placeholder:text-red-400/50 px-2 py-1 rounded-t-md"
+                                placeholder="Red Team"
+                            />
+                        ) : (
+                            <div className="flex items-center justify-end group gap-2">
+                                {!isReadOnly && (
+                                    <button
+                                        onClick={() => setIsEditingRed(true)}
+                                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-white/5 rounded-md text-red-400/50 hover:text-red-400"
+                                    >
+                                        <Pencil size={16} />
+                                    </button>
+                                )}
+                                <h2 className="text-2xl font-black italic tracking-tighter text-red-400 uppercase">
+                                    {redTeamName}
+                                </h2>
+                            </div>
+                        )}
                         <div className="flex items-center justify-between w-full">
                             <div className="grid grid-cols-2 gap-2">
                                 {[3,4].map(i => <Slot key={i} side="redBan" index={i} type="ban" />)}
