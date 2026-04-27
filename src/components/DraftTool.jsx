@@ -18,7 +18,7 @@ import html2canvas from 'html2canvas';
 import Image from 'next/image';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PATCH_NO } from '@/lib/const';
+import { PATCH_NO, posList } from '@/lib/const';
 
 import { createClient } from '@/lib/supabaseClient';
 
@@ -55,6 +55,7 @@ export default function DraftTool() {
 
     const [champions, setChampions] = useState({});
     const [searchTerm, setSearchTerm] = useState('');
+    const [selectedRole, setSelectedRole] = useState(null);
     const [currentSide, setCurrentSide] = useState('blue');
     const [currentSelection, setCurrentSelection] = useState(0);
     const [draftMode, setDraftMode] = useState('Draft');
@@ -346,7 +347,9 @@ export default function DraftTool() {
     };
 
     const filteredChampions = Object.entries(champions).filter(([_, champ]) => {
-        return champ.name.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesSearch = champ.name.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesRole = !selectedRole || champ.roles?.includes(selectedRole);
+        return matchesSearch && matchesRole;
     });
 
     const Slot = ({ side, index, type = 'pick' }) => {
@@ -555,7 +558,25 @@ export default function DraftTool() {
                             </div>
                         </div>
 
-                        {/* ACTION BAR - Using Shadcn UI components */}
+                        {/* Role filter container */}
+                        <div className="flex items-center gap-1 p-1.5 rounded-2xl bg-slate-900/80 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.6)] shrink-0">
+                            {posList.map((pos) => (
+                                <button
+                                    key={pos.value}
+                                    onClick={() => setSelectedRole(selectedRole === pos.value ? null : pos.value)}
+                                    title={pos.name}
+                                    className={`flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200
+                                        ${selectedRole === pos.value
+                                            ? 'bg-amber-400/20 shadow-[0_0_10px_rgba(251,191,36,0.15)]'
+                                            : 'hover:bg-white/10'
+                                        }`}
+                                >
+                                    <Image src={pos.img} alt={pos.name} width={22} height={22} className="object-contain" />
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* ACTION BAR */}
                         <div className="flex items-center justify-center gap-2 p-1.5 rounded-2xl bg-slate-900/80 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.6)] shrink-0 relative w-full md:w-auto">
                             {!isReadOnly && (
                                 <>
@@ -575,10 +596,9 @@ export default function DraftTool() {
                                     >
                                         <Save size={18} />
                                     </Button>
+                                    <div className="w-[1px] h-5 bg-white/10 mx-1" />
                                 </>
                             )}
-                            
-                            <div className="w-[1px] h-5 bg-white/10 mx-1" />
 
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>

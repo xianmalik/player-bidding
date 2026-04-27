@@ -13,11 +13,11 @@ const rankList = [
 ]
 
 const posList = [
-    {name: "Top", value: "top", img: "/assets/img/pos/Top_icon.png"},
-    {name: "Jungler", value: "jg", img: "/assets/img/pos/Jungle_icon.png"},
-    {name: "Mid", value: "mid", img: "/assets/img/pos/Middle_icon.png"},
-    {name: "ADC", value: "adc", img: "/assets/img/pos/Bottom_icon.png"},
-    {name: "Support", value: "sp", img: "/assets/img/pos/Support_icon.png"},
+    {name: "Top", value: "top", img: "/assets/img/pos/top.svg"},
+    {name: "Jungler", value: "jg", img: "/assets/img/pos/jg.svg"},
+    {name: "Mid", value: "mid", img: "/assets/img/pos/mid.svg"},
+    {name: "ADC", value: "adc", img: "/assets/img/pos/adc.svg"},
+    {name: "Support", value: "sp", img: "/assets/img/pos/sp.svg"},
 ]
 
 const PATCH_NO = '14.8.1';

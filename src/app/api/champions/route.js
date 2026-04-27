@@ -1,6 +1,7 @@
 import { PATCH_NO } from '@/lib/const';
+import championRoles from '@/lib/championRoles';
 
-export const revalidate = 86400; // revalidate once per day — patch data rarely changes
+export const revalidate = 86400;
 
 export async function GET() {
   const res = await fetch(
@@ -13,5 +14,13 @@ export async function GET() {
   }
 
   const json = await res.json();
-  return Response.json(json.data);
+
+  const data = Object.fromEntries(
+    Object.entries(json.data).map(([key, champ]) => [
+      key,
+      { ...champ, roles: championRoles[champ.id] ?? [] },
+    ])
+  );
+
+  return Response.json(data);
 }
