@@ -366,16 +366,9 @@ export default function DraftTool() {
                     ${isBan ? 'w-16 h-16 rounded-md' : `h-32 w-full rounded-xl`}
                     ${isActive ? (isBlue ? 'ring-2 ring-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.3)]' : 'ring-2 ring-red-500 shadow-[0_0_20px_rgba(239,68,68,0.3)]') : 'opacity-80'}
                     bg-gray-800/40 backdrop-blur-md border border-white/10 group`}
-            >
-                {/* Active Indicator Bar */}
-                {isActive && (
-                    <motion.div
-                        layoutId={`indicator-${side}-${index}`}
-                        className={`absolute ${isBlue ? 'left-0' : 'right-0'} top-0 bottom-0 w-1.5 ${isBlue ? 'bg-blue-500 shadow-[4px_0_15px_rgba(59,130,246,0.5)]' : 'bg-red-500 shadow-[-4px_0_15px_rgba(239,68,68,0.5)]'} z-20`}
-                    />
-                )}
-
+                >
                 {data ? (
+
                     <div className="relative w-full h-full">
                         <motion.div
                             initial={{ opacity: 0 }}

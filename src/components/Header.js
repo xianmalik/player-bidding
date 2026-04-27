@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { LogIn, LogOut, Sword, ChevronDown, User, Settings, Shield } from 'lucide-react';
+import { LogIn, LogOut, Sword, ChevronDown, User, Settings, Shield, Plus } from 'lucide-react';
 import { 
     DropdownMenu, 
     DropdownMenuContent, 
@@ -76,20 +76,33 @@ export default function Header({
 
                     <div className="h-6 w-[1px] bg-white/10" />
 
+                    {/* NEW DRAFT BUTTON */}
+                    <Button
+                        variant="ghost"
+                        onClick={() => window.location.href = '/'}
+                        className="hidden md:flex items-center gap-2 h-9 px-4 rounded-xl border border-blue-500/50 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 transition-all font-bold text-xs uppercase tracking-widest shadow-[0_0_15px_rgba(59,130,246,0.2)]"
+                    >
+                        <Plus size={16} strokeWidth={3} />
+                        New Draft
+                    </Button>
+
                     {/* USER MENU - Using Shadcn DropdownMenu */}
                     <div className="relative">
                         {user ? (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <button className="flex items-center gap-3 text-xs font-black uppercase text-white/50 hover:text-white transition-colors tracking-[0.2em] cursor-pointer pl-2 pr-1 py-1 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 outline-none">
-                                        <Avatar className="w-6 h-6 border border-white/10">
+                                    <Button 
+                                        variant="ghost" 
+                                        className="h-10 px-2 gap-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-all outline-none"
+                                    >
+                                        <Avatar className="w-7 h-7 border border-white/10">
                                             <AvatarFallback className="bg-amber-400 text-slate-900 font-black text-[10px]">
                                                 {user.email?.[0].toUpperCase()}
                                             </AvatarFallback>
                                         </Avatar>
-                                        <span className="hidden sm:inline">{user.email?.split('@')[0]}</span>
+                                        <span className="hidden sm:inline font-bold text-xs uppercase tracking-widest">{user.email?.split('@')[0]}</span>
                                         <ChevronDown size={14} className="opacity-50" />
-                                    </button>
+                                    </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="w-64 mt-2 bg-slate-900/95 backdrop-blur-2xl border-white/10 p-2">
                                     <DropdownMenuLabel className="px-3 py-3">
