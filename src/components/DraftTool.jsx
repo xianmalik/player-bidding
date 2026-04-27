@@ -405,17 +405,11 @@ export default function DraftTool() {
 
                     {/* PICKS SECTION */}
                     <div className="space-y-4">
-                        <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-black text-blue-400/40 uppercase tracking-[0.3em]">Picks - Phase 1</span>
-                        </div>
                         {[0,1,2].map(i => <Slot key={i} side="blue" index={i} />)}
                         
                         <div className="relative py-2">
                             <div className="absolute inset-0 flex items-center" aria-hidden="true">
                                 <div className="w-full border-t border-blue-500/20"></div>
-                            </div>
-                            <div className="relative flex justify-start">
-                                <span className="bg-[#020617] pr-3 text-[10px] font-black text-blue-400/40 uppercase tracking-[0.3em]">Phase 2</span>
                             </div>
                         </div>
 
@@ -696,17 +690,11 @@ export default function DraftTool() {
 
                     {/* PICKS SECTION */}
                     <div className="space-y-4">
-                        <div className="flex items-center justify-end gap-2">
-                            <span className="text-[10px] font-black text-red-400/40 uppercase tracking-[0.3em]">Picks - Phase 1</span>
-                        </div>
                         {[0,1,2].map(i => <Slot key={i} side="red" index={i} />)}
                         
                         <div className="relative py-2">
                             <div className="absolute inset-0 flex items-center" aria-hidden="true">
                                 <div className="w-full border-t border-red-500/20"></div>
-                            </div>
-                            <div className="relative flex justify-end">
-                                <span className="bg-[#020617] pl-3 text-[10px] font-black text-red-400/40 uppercase tracking-[0.3em]">Phase 2</span>
                             </div>
                         </div>
 
