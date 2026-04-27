@@ -401,11 +401,12 @@ export default function DraftTool() {
                 setDraftMode={setDraftMode}
             />
 
-            <div className="max-w-[1800px] mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 pt-4 px-4 md:px-8 pb-12">
-                
+            <div className="max-w-[1800px] mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 pt-8 px-4 md:px-8 pb-12 items-stretch">
+
                 {/* BLUE SIDE */}
-                <div ref={blueRef} className="md:col-span-3 order-2 md:order-1 space-y-6">
-                    <div className="space-y-3">
+                <div ref={blueRef} className="md:col-span-3 order-2 md:order-1 space-y-6 flex flex-col">
+                    <div className="space-y-3 shrink-0">
+
                         <h2 className="text-2xl font-black italic tracking-tighter text-blue-400 uppercase">Blue Team</h2>
                         <div className="flex items-center justify-between w-full">
                             <div className="grid grid-cols-3 gap-2">
@@ -419,7 +420,7 @@ export default function DraftTool() {
                     </div>
 
                     {/* PICKS SECTION */}
-                    <div className="space-y-4">
+                    <div className="space-y-4 flex-1">
                         {[0,1,2].map(i => <Slot key={i} side="blue" index={i} />)}
                         
                         <div className="relative py-2">
@@ -433,7 +434,7 @@ export default function DraftTool() {
                 </div>
 
                 {/* CHAMPION SELECTION */}
-                <div className="md:col-span-6 order-1 md:order-2 space-y-4">
+                <div className="md:col-span-6 order-1 md:order-2 flex flex-col gap-4">
 
                     {/* Search Bar + Action Bar */}
                     <div className="flex flex-col md:flex-row items-center gap-3 w-full z-20 relative">
@@ -543,9 +544,9 @@ export default function DraftTool() {
                         </div>
                     </div>
                     
-                    <div className="bg-white/5 border border-white/10 rounded-2xl backdrop-blur-3xl relative overflow-hidden z-10">
+                    <div className="bg-white/5 border border-white/10 rounded-2xl backdrop-blur-3xl relative overflow-hidden z-10 flex-1 flex flex-col max-h-[800px]">
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
-                        <ScrollArea className="h-[500px] md:h-[600px] lg:h-[680px]">
+                        <ScrollArea className="flex-1 w-full">
                             <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2 p-4">
                                 <AnimatePresence mode='popLayout'>
                                     {filteredChampions.map(([key, champ]) => {
@@ -609,8 +610,8 @@ export default function DraftTool() {
                 </div>
 
                 {/* RED SIDE */}
-                <div ref={redRef} className="md:col-span-3 order-3 md:order-3 space-y-6">
-                    <div className="space-y-3 text-right">
+                <div ref={redRef} className="md:col-span-3 order-3 md:order-3 space-y-6 flex flex-col">
+                    <div className="space-y-3 text-right shrink-0">
                         <h2 className="text-2xl font-black italic tracking-tighter text-red-400 uppercase">Red Team</h2>
                         <div className="flex items-center justify-between w-full">
                             <div className="grid grid-cols-2 gap-2">
@@ -624,7 +625,7 @@ export default function DraftTool() {
                     </div>
 
                     {/* PICKS SECTION */}
-                    <div className="space-y-4">
+                    <div className="space-y-4 flex-1">
                         {[0,1,2].map(i => <Slot key={i} side="red" index={i} />)}
                         
                         <div className="relative py-2">
