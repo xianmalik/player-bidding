@@ -54,6 +54,7 @@ export default function DraftTool() {
     const [authError, setAuthError] = useState('');
 
     const [champions, setChampions] = useState({});
+    const [inputValue, setInputValue] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedRole, setSelectedRole] = useState(null);
     const [currentSide, setCurrentSide] = useState('blue');
@@ -265,8 +266,14 @@ export default function DraftTool() {
         setDraftTitle('Game 1');
         setCurrentSide('blue');
         setCurrentSelection(0);
+        setInputValue('');
         setSearchTerm('');
     };
+
+    useEffect(() => {
+        const id = setTimeout(() => setSearchTerm(inputValue), 200);
+        return () => clearTimeout(id);
+    }, [inputValue]);
 
     useEffect(() => {
         const fetchChampions = async () => {
@@ -457,7 +464,7 @@ export default function DraftTool() {
                                 {!isReadOnly && (
                                     <button
                                         onClick={() => setIsEditingBlue(true)}
-                                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-white/5 rounded-md text-blue-400/50 hover:text-blue-400"
+                                        className="transition-opacity p-1 hover:bg-white/5 rounded-md text-blue-400/50 hover:text-blue-400"
                                     >
                                         <Pencil size={16} />
                                     </button>
@@ -530,19 +537,19 @@ export default function DraftTool() {
                                 </div>
                                 <input
                                     ref={searchInputRef}
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    value={inputValue}
+                                    onChange={(e) => setInputValue(e.target.value)}
                                     placeholder="Search Champions..."
                                     className="w-full h-14 bg-transparent border-none focus:ring-0 focus:outline-none text-base font-bold tracking-wider px-3 text-white placeholder:text-white/10"
                                 />
                                 <div className="flex items-center gap-2 pr-4">
                                     <AnimatePresence>
-                                        {searchTerm && (
+                                        {inputValue && (
                                             <motion.button
                                                 initial={{ opacity: 0, scale: 0.8 }}
                                                 animate={{ opacity: 1, scale: 1 }}
                                                 exit={{ opacity: 0, scale: 0.8 }}
-                                                onClick={() => setSearchTerm('')}
+                                                onClick={() => { setInputValue(''); setSearchTerm(''); }}
                                                 className="p-1 hover:bg-white/10 rounded-md text-white/40 hover:text-white transition-colors"
                                             >
                                                 <X size={14} />
@@ -671,7 +678,6 @@ export default function DraftTool() {
 
                                         return (
                                             <motion.div
-                                                layout
                                                 initial={{ opacity: 0, scale: 0.9 }}
                                                 animate={{ opacity: 1, scale: 1 }}
                                                 exit={{ opacity: 0, scale: 0.9 }}
@@ -742,7 +748,7 @@ export default function DraftTool() {
                                 {!isReadOnly && (
                                     <button
                                         onClick={() => setIsEditingRed(true)}
-                                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-white/5 rounded-md text-red-400/50 hover:text-red-400"
+                                        className="transition-opacity p-1 hover:bg-white/5 rounded-md text-red-400/50 hover:text-red-400"
                                     >
                                         <Pencil size={16} />
                                     </button>
