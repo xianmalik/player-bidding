@@ -11,24 +11,13 @@ import {
     DropdownMenuSeparator, 
     DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import {
-    Menubar,
-    MenubarContent,
-    MenubarItem,
-    MenubarMenu,
-    MenubarSeparator,
-    MenubarShortcut,
-    MenubarTrigger,
-} from "@/components/ui/menubar"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 
-export default function Header({ 
-    user, 
-    onLogout, 
-    onLoginClick, 
-    draftMode, 
-    setDraftMode 
+export default function Header({
+    user,
+    onLogout,
+    onLoginClick,
 }) {
     return (
         <header className="z-[100] py-2">
@@ -45,37 +34,6 @@ export default function Header({
 
                 {/* NAV & LOGIN */}
                 <div className="flex items-center gap-3 lg:gap-8">
-                    <div className="hidden sm:flex items-center">
-                        <Menubar className="bg-transparent border-none shadow-none">
-                            <MenubarMenu>
-                                <MenubarTrigger 
-                                    onClick={() => setDraftMode('Draft')}
-                                    className={draftMode === 'Draft' ? 'text-amber-400' : 'text-white/30'}
-                                >
-                                    Draft
-                                </MenubarTrigger>
-                            </MenubarMenu>
-                            <MenubarMenu>
-                                <MenubarTrigger 
-                                    disabled
-                                    className="text-white/10"
-                                >
-                                    Fearless <span className="ml-1 text-[8px] normal-case tracking-normal opacity-50">(soon)</span>
-                                </MenubarTrigger>
-                                <MenubarContent>
-                                    <MenubarItem disabled>
-                                        Classic Fearless
-                                    </MenubarItem>
-                                    <MenubarItem disabled>
-                                        Hardcore Fearless
-                                    </MenubarItem>
-                                </MenubarContent>
-                            </MenubarMenu>
-                        </Menubar>
-                    </div>
-
-                    <div className="h-6 w-[1px] bg-white/10" />
-
                     {/* NEW DRAFT BUTTON */}
                     <Button
                         variant="ghost"
