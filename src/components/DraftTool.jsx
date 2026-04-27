@@ -390,9 +390,9 @@ export default function DraftTool() {
                         {!isReadOnly && (
                             <button
                                 onClick={(e) => { e.stopPropagation(); handleRemove(side, index); }}
-                                className={`absolute top-1 ${isBlue ? 'right-1' : 'left-1'} p-1 rounded-full bg-black/60 text-white/50 hover:text-white hover:bg-red-600/80 opacity-0 group-hover:opacity-100 transition-all z-10`}
+                                className={`absolute top-1.5 ${isBlue ? 'right-1.5' : 'left-1.5'} p-1.5 rounded-lg bg-black/40 backdrop-blur-md border border-white/10 text-white/70 hover:text-white hover:bg-red-500 hover:border-red-400 opacity-0 group-hover:opacity-100 transition-all z-20 shadow-xl`}
                             >
-                                <X size={12} />
+                                <X size={14} strokeWidth={3} />
                             </button>
                         )}
                     </div>
