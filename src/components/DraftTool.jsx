@@ -244,8 +244,10 @@ export default function DraftTool() {
         ctx.fillRect(0, 0, TARGET_W, TARGET_H);
         ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height, destX, destY, destW, destH);
 
+        const fileName = `${blueTeamName.replace(/\s+/g, '_')}_vs_${redTeamName.replace(/\s+/g, '_')}_${draftTitle.replace(/\s+/g, '_')}.png`;
+
         const link = document.createElement('a');
-        link.download = 'draft.png';
+        link.download = fileName;
         link.href = out.toDataURL('image/png');
         link.click();
     };
