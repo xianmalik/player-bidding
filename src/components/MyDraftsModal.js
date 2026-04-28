@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Shield, Calendar, Clock } from 'lucide-react';
+import { Search, Shield, Calendar, Clock, Globe, Lock } from 'lucide-react';
 import { Modal } from './ui/modal';
 import { Input } from './ui/input';
 import ChampionAvatar from './ChampionAvatar';
@@ -150,9 +150,24 @@ export default function MyDraftsModal({ isOpen, onClose, user }) {
                         >
                             {/* Draft Header */}
                             <div className="mb-3">
-                                <h3 className="text-sm font-black text-white uppercase tracking-tight mb-1 group-hover:text-blue-400 transition-colors line-clamp-1">
-                                    {draft.name}
-                                </h3>
+                                <div className="flex items-start justify-between mb-1">
+                                    <h3 className="text-sm font-black text-white uppercase tracking-tight group-hover:text-blue-400 transition-colors line-clamp-1 flex-1">
+                                        {draft.name}
+                                    </h3>
+                                    <div className="flex items-center gap-1 ml-2">
+                                        {draft.isPublic ? (
+                                            <div className="flex items-center gap-1 px-2 py-1 rounded bg-emerald-500/10 text-emerald-400" title="Public">
+                                                <Globe size={10} />
+                                                <span className="text-[8px] font-medium">PUBLIC</span>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center gap-1 px-2 py-1 rounded bg-slate-600/10 text-slate-400" title="Private">
+                                                <Lock size={10} />
+                                                <span className="text-[8px] font-medium">PRIVATE</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                                 <div className="flex items-center gap-2 text-[10px] text-white/40">
                                     <div className="flex items-center gap-1">
                                         <Calendar size={10} />

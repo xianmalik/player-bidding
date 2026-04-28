@@ -12,7 +12,7 @@ import {
     DropdownMenuItem,
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { Search, Ban, User, X, Command, Check, RotateCcw, Download, Share2, Link2, Save, LogIn, LogOut, MoreVertical, Globe, Lock, Pencil } from 'lucide-react';
+import { Search, Ban, User, X, Command, Check, RotateCcw, Download, Share2, Link2, Save, LogIn, LogOut, MoreVertical, Globe, Lock, Pencil, Shield, ChevronRight } from 'lucide-react';
 import html2canvas from 'html2canvas';
 
 import Image from 'next/image';
@@ -24,30 +24,34 @@ import { createClient } from '@/lib/supabaseClient';
 
 import Header from '@/components/Header';
 
+const emptyGame = () => ({
+    blueBan: Array(5).fill(null),
+    redBan: Array(5).fill(null),
+    blue: Array(5).fill(null),
+    red: Array(5).fill(null),
+});
+
 export default function DraftTool() {
     const supabase = createClient();
     const [user, setUser] = useState(null);
     const [isLoadingDraft, setIsLoadingDraft] = useState(false);
     const [draftId, setDraftId] = useState(null);
     const [draftOwnerId, setDraftOwnerId] = useState(null);
-    
+
     const isReadOnly = Boolean(draftId && user?.id !== draftOwnerId);
 
     // Team Names State
     const [blueTeamName, setBlueTeamName] = useState('Blue Team');
     const [redTeamName, setRedTeamName] = useState('Red Team');
-    const [draftTitle, setDraftTitle] = useState('Game 1');
     const [isEditingBlue, setIsEditingBlue] = useState(false);
     const [isEditingRed, setIsEditingRed] = useState(false);
-    const [isEditingTitle, setIsEditingTitle] = useState(false);
 
     // Auth Modal State
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
     // Action Bar State
-    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isPublic, setIsPublic] = useState(false);
-    const [authMode, setAuthMode] = useState('login'); // 'login' or 'signup'
+    const [authMode, setAuthMode] = useState('login');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [authLoading, setAuthLoading] = useState(false);
@@ -65,67 +69,111 @@ export default function DraftTool() {
     const blueRef = useRef(null);
     const redRef = useRef(null);
 
-    const [selected, setSelected] = useState({
-        blueBan: Array(5).fill(null),
-        redBan: Array(5).fill(null),
-        blue: Array(5).fill(null),
-        red: Array(5).fill(null)
-    });
+    // Series / Fearless state
+    const [isFearless, setIsFearless] = useState(false);
+    const [games, setGames] = useState([emptyGame()]);
+    const [currentGameIndex, setCurrentGameIndex] = useState(0);
+
+    // Derived: current game's picks/bans
+    const selected = games[currentGameIndex] ?? emptyGame();
+
+    // Derived: fearless bans = all picks from all previous games in this series
+    const fearlessBans = isFearless
+        ? games
+            .slice(0, currentGameIndex)
+            .flatMap(g => [...(g.blue ?? []), ...(g.red ?? [])])
+            .filter(Boolean)
+        : [];
+
+    const canAddNextGame =
+        selected.blue.some(Boolean) || selected.red.some(Boolean);
+
+    // Update current game's state (mirrors the old setSelected API)
+    const setCurrentGame = useCallback((updater) => {
+        setGames(prev => {
+            const next = [...prev];
+            const cur = prev[currentGameIndex] ?? emptyGame();
+            next[currentGameIndex] =
+                typeof updater === 'function' ? updater(cur) : updater;
+            return next;
+        });
+    }, [currentGameIndex]);
+
+    const addNextGame = () => {
+        setGames(prev => [...prev, emptyGame()]);
+        setCurrentGameIndex(games.length); // games.length is the new index
+    };
 
     useEffect(() => {
-        // Load session
         supabase.auth.getSession().then(({ data: { session } }) => {
             setUser(session?.user ?? null);
         });
-
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setUser(session?.user ?? null);
         });
-
         return () => subscription.unsubscribe();
     }, [supabase]);
 
     useEffect(() => {
         const searchParams = new URLSearchParams(window.location.search);
         const id = searchParams.get('draft');
-        
-        if (id) {
-            setIsLoadingDraft(true);
-            setDraftId(id);
-            const fetchDraft = async () => {
-                try {
-                    const { data, error } = await supabase
-                        .from('drafts')
-                        .select('draft_data, user_id, is_public')
-                        .eq('id', id)
-                        .single();
-                    if (data && data.draft_data) {
-                        setSelected(data.draft_data);
-                        setDraftOwnerId(data.user_id);
-                        setIsPublic(data.is_public);
-                        if (data.draft_data.blueTeamName) setBlueTeamName(data.draft_data.blueTeamName);
-                        if (data.draft_data.redTeamName) setRedTeamName(data.draft_data.redTeamName);
-                        if (data.draft_data.draftTitle) setDraftTitle(data.draft_data.draftTitle);
-                    } else if (error) {
-                        console.error('Error fetching draft:', error);
-                        toast.error('Draft not found or is private.');
+
+        if (!id) return;
+
+        setIsLoadingDraft(true);
+        setDraftId(id);
+
+        const fetchDraft = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('drafts')
+                    .select('draft_data, user_id, is_public')
+                    .eq('id', id)
+                    .single();
+
+                if (data?.draft_data) {
+                    const dd = data.draft_data;
+                    setDraftOwnerId(data.user_id);
+                    setIsPublic(data.is_public);
+                    if (dd.blueTeamName) setBlueTeamName(dd.blueTeamName);
+                    if (dd.redTeamName) setRedTeamName(dd.redTeamName);
+
+                    if (dd.games) {
+                        // New series format
+                        setGames(dd.games.map(g => ({
+                            blueBan: g.blueBan ?? Array(5).fill(null),
+                            redBan:  g.redBan  ?? Array(5).fill(null),
+                            blue:    g.blue    ?? Array(5).fill(null),
+                            red:     g.red     ?? Array(5).fill(null),
+                        })));
+                        setCurrentGameIndex(dd.currentGame ?? 0);
+                        setIsFearless(dd.isFearless ?? false);
+                    } else {
+                        // Legacy single-game format
+                        setGames([{
+                            blueBan: dd.blueBan ?? Array(5).fill(null),
+                            redBan:  dd.redBan  ?? Array(5).fill(null),
+                            blue:    dd.blue    ?? Array(5).fill(null),
+                            red:     dd.red     ?? Array(5).fill(null),
+                        }]);
                     }
-                } catch (e) {
-                    console.error(e);
-                } finally {
-                    setIsLoadingDraft(false);
+                } else if (error) {
+                    console.error('Error fetching draft:', error);
+                    toast.error('Draft not found or is private.');
                 }
-            };
-            fetchDraft();
-        }
+            } catch (e) {
+                console.error(e);
+            } finally {
+                setIsLoadingDraft(false);
+            }
+        };
+        fetchDraft();
     }, [supabase]);
 
     const handleGoogleLogin = async () => {
         await supabase.auth.signInWithOAuth({
             provider: 'google',
-            options: {
-                redirectTo: window.location.origin,
-            }
+            options: { redirectTo: window.location.origin },
         });
     };
 
@@ -133,7 +181,7 @@ export default function DraftTool() {
         e.preventDefault();
         setAuthLoading(true);
         setAuthError('');
-        
+
         let result;
         if (authMode === 'signup') {
             result = await supabase.auth.signUp({ email, password });
@@ -164,24 +212,23 @@ export default function DraftTool() {
 
         const stripChamp = (c) => c ? { id: c.id, key: c.key } : null;
         const minimalDraftData = {
-            blueBan: selected.blueBan.map(stripChamp),
-            redBan: selected.redBan.map(stripChamp),
-            blue: selected.blue.map(stripChamp),
-            red: selected.red.map(stripChamp),
+            isFearless,
             blueTeamName,
             redTeamName,
-            draftTitle
+            currentGame: currentGameIndex,
+            games: games.map(g => ({
+                blueBan: g.blueBan.map(stripChamp),
+                redBan:  g.redBan.map(stripChamp),
+                blue:    g.blue.map(stripChamp),
+                red:     g.red.map(stripChamp),
+            })),
         };
+        const seriesName = `${blueTeamName} vs ${redTeamName}`;
 
         if (draftId && user.id === draftOwnerId) {
-            // Update existing draft
             const { error } = await supabase
                 .from('drafts')
-                .update({ 
-                    draft_data: minimalDraftData, 
-                    name: draftTitle || `Draft ${new Date().toLocaleDateString()}`,
-                    is_public: isPublic 
-                })
+                .update({ draft_data: minimalDraftData, name: seriesName, is_public: isPublic })
                 .eq('id', draftId);
 
             if (error) {
@@ -191,15 +238,9 @@ export default function DraftTool() {
                 toast.success('Draft updated successfully!');
             }
         } else {
-            // Insert new draft
             const { data, error } = await supabase
                 .from('drafts')
-                .insert([{ 
-                    user_id: user.id, 
-                    draft_data: minimalDraftData,
-                    name: draftTitle || `Draft ${new Date().toLocaleDateString()}`,
-                    is_public: isPublic
-                }])
+                .insert([{ user_id: user.id, draft_data: minimalDraftData, name: seriesName, is_public: isPublic }])
                 .select()
                 .single();
 
@@ -211,9 +252,7 @@ export default function DraftTool() {
                 setDraftOwnerId(user.id);
                 const link = `${window.location.origin}/?draft=${data.id}`;
                 navigator.clipboard.writeText(link);
-                toast.success('Draft saved successfully!', {
-                    description: 'Link copied to clipboard.'
-                });
+                toast.success('Draft saved!', { description: 'Link copied to clipboard.' });
             }
         }
     };
@@ -229,13 +268,10 @@ export default function DraftTool() {
             scale: 2,
             onclone: (clonedDoc) => {
                 const header = clonedDoc.querySelector('header');
-                if (header) {
-                    header.style.display = 'none';
-                }
+                if (header) header.style.display = 'none';
             }
         });
 
-        // fit the full captured page into 1920x1080, preserving aspect ratio
         const ratio = Math.min(TARGET_W / canvas.width, TARGET_H / canvas.height);
         const destW = canvas.width * ratio;
         const destH = canvas.height * ratio;
@@ -250,8 +286,8 @@ export default function DraftTool() {
         ctx.fillRect(0, 0, TARGET_W, TARGET_H);
         ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height, destX, destY, destW, destH);
 
-        const fileName = `${blueTeamName.replace(/\s+/g, '_')}_vs_${redTeamName.replace(/\s+/g, '_')}_${draftTitle.replace(/\s+/g, '_')}.png`;
-
+        const gamePart = isFearless ? `Game${currentGameIndex + 1}` : 'Draft';
+        const fileName = `${blueTeamName.replace(/\s+/g, '_')}_vs_${redTeamName.replace(/\s+/g, '_')}_${gamePart}.png`;
         const link = document.createElement('a');
         link.download = fileName;
         link.href = out.toDataURL('image/png');
@@ -259,15 +295,11 @@ export default function DraftTool() {
     };
 
     const resetDraft = () => {
-        setSelected({
-            blueBan: Array(5).fill(null),
-            redBan: Array(5).fill(null),
-            blue: Array(5).fill(null),
-            red: Array(5).fill(null)
-        });
+        setGames([emptyGame()]);
+        setCurrentGameIndex(0);
+        setIsFearless(false);
         setBlueTeamName('Blue Team');
         setRedTeamName('Red Team');
-        setDraftTitle('Game 1');
         setCurrentSide('blue');
         setCurrentSelection(0);
         setInputValue('');
@@ -290,7 +322,6 @@ export default function DraftTool() {
         };
         fetchChampions();
 
-        // Keyboard shortcut to focus search
         const handleKeyDown = (e) => {
             if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
                 e.preventDefault();
@@ -306,20 +337,25 @@ export default function DraftTool() {
         const champ = champions[champKey];
         if (!champ) return;
 
-        const isAlreadySelected = Object.values(selected).flat().some(s => s?.id === champ.id);
-        if (isAlreadySelected) return;
+        setGames(prev => {
+            const cur = prev[currentGameIndex] ?? emptyGame();
+            const isAlreadySelected = Object.values(cur).flat().some(s => s?.id === champ.id);
+            const isFearlessLocked = isFearless && prev
+                .slice(0, currentGameIndex)
+                .flatMap(g => [...(g.blue ?? []), ...(g.red ?? [])])
+                .some(s => s?.id === champ.id);
+            if (isAlreadySelected || isFearlessLocked) return prev;
 
-        setSelected(prev => {
-            const next = { ...prev };
-            next[side] = [...prev[side]];
-            next[side][index] = champ;
+            const next = [...prev];
+            next[currentGameIndex] = { ...cur, [side]: [...cur[side]] };
+            next[currentGameIndex][side][index] = champ;
             return next;
         });
-    }, [champions, currentSide, currentSelection, selected, isReadOnly]);
+    }, [champions, currentSide, currentSelection, currentGameIndex, isReadOnly, isFearless]);
 
     const handleRemove = (side, index) => {
         if (isReadOnly) return;
-        setSelected(prev => {
+        setCurrentGame(prev => {
             const next = { ...prev, [side]: [...prev[side]] };
             next[side][index] = null;
             return next;
@@ -329,7 +365,6 @@ export default function DraftTool() {
     const handleDragStart = (e, payload) => {
         if (isReadOnly) return;
         e.dataTransfer.setData('payload', JSON.stringify(payload));
-        // preload splash art so it's cached by the time the user drops
         if (payload.type === 'champion') {
             const img = new window.Image();
             img.src = `https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${champions[payload.champKey]?.id}_0.jpg`;
@@ -347,9 +382,8 @@ export default function DraftTool() {
         } else if (payload.type === 'slot') {
             const { side: srcSide, index: srcIndex } = payload;
             if (srcSide === targetSide && srcIndex === targetIndex) return;
-            setSelected(prev => {
+            setCurrentGame(prev => {
                 const next = { ...prev, [srcSide]: [...prev[srcSide]], [targetSide]: [...prev[targetSide]] };
-                // swap: put src into target, target into src
                 [next[targetSide][targetIndex], next[srcSide][srcIndex]] =
                     [next[srcSide][srcIndex], next[targetSide][targetIndex]];
                 return next;
@@ -368,9 +402,9 @@ export default function DraftTool() {
         const data = selected[side][index];
         const isActive = currentSide === side && currentSelection === index;
         const isBlue = side.startsWith('blue');
-        
-        const imageUrl = data 
-            ? (isBan 
+
+        const imageUrl = data
+            ? (isBan
                 ? `https://ddragon.leagueoflegends.com/cdn/${PATCH_NO}/img/champion/${data.id}.png`
                 : `https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${data.id}_0.jpg`)
             : null;
@@ -385,12 +419,11 @@ export default function DraftTool() {
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => handleDrop(e, side, index)}
                 className={`relative cursor-pointer overflow-hidden transition-all duration-300
-                    ${isBan ? 'w-16 h-16 rounded-md' : `h-32 w-full rounded-xl`}
+                    ${isBan ? 'w-16 h-16 rounded-md' : 'h-32 w-full rounded-xl'}
                     ${isActive ? (isBlue ? 'ring-2 ring-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.3)]' : 'ring-2 ring-red-500 shadow-[0_0_20px_rgba(239,68,68,0.3)]') : 'opacity-80'}
                     bg-gray-800/40 backdrop-blur-md border border-white/10 group`}
-                >
+            >
                 {data ? (
-
                     <div className="relative w-full h-full">
                         <motion.div
                             initial={{ opacity: 0 }}
@@ -432,6 +465,39 @@ export default function DraftTool() {
         );
     };
 
+    // Per-slot fearless history: square avatars at half pick-slot height (h-16 = 64px)
+    const SlotHistory = ({ side, index, align }) => {
+        if (!isFearless || currentGameIndex === 0) return null;
+        const history = games
+            .slice(0, currentGameIndex)
+            .map((g, gi) => ({ champ: (g[side] ?? [])[index], gameNum: gi + 1 }))
+            .filter(({ champ }) => champ);
+        if (history.length === 0) return null;
+
+        return (
+            <div className={`flex flex-col gap-1 items-center justify-center shrink-0 w-16 h-32 ${align === 'right' ? 'order-last' : 'order-first'}`}>
+                {history.map(({ champ, gameNum }) => (
+                    <div
+                        key={gameNum}
+                        title={`G${gameNum}: ${champ.id}`}
+                        className="relative w-16 h-16 rounded-lg overflow-hidden border border-amber-500/25 shrink-0"
+                    >
+                        <Image
+                            src={`https://ddragon.leagueoflegends.com/cdn/${PATCH_NO}/img/champion/${champ.id}.png`}
+                            alt={champ.id}
+                            fill
+                            className="object-cover grayscale opacity-50"
+                        />
+                        <div className="absolute inset-0 bg-amber-950/25" />
+                        <span className="absolute bottom-0.5 right-1 text-[7px] font-black text-amber-400/80 leading-none drop-shadow-[0_1px_1px_rgba(0,0,0,1)]">
+                            G{gameNum}
+                        </span>
+                    </div>
+                ))}
+            </div>
+        );
+    };
+
     if (isLoadingDraft) {
         return (
             <div className="min-h-screen bg-[#020617] flex items-center justify-center">
@@ -442,9 +508,9 @@ export default function DraftTool() {
 
     return (
         <div ref={pageRef} className="min-h-screen bg-[#020617] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-[#020617] to-black text-slate-200 relative">
-            <Header 
-                user={user} 
-                onLogout={handleLogout} 
+            <Header
+                user={user}
+                onLogout={handleLogout}
                 onLoginClick={() => setIsAuthModalOpen(true)}
                 draftMode={draftMode}
                 setDraftMode={setDraftMode}
@@ -467,7 +533,7 @@ export default function DraftTool() {
                             />
                         ) : (
                             <div className="flex items-center group gap-2">
-                                    <h2 className="text-2xl font-black italic tracking-tighter text-blue-400">
+                                <h2 className="text-2xl font-black italic tracking-tighter text-blue-400">
                                     {blueTeamName}
                                 </h2>
                                 {!isReadOnly && (
@@ -491,48 +557,70 @@ export default function DraftTool() {
                         </div>
                     </div>
 
-                    {/* PICKS SECTION */}
+                    {/* PICKS — fearless history icon left of each slot */}
                     <div className="space-y-4 flex-1">
-                        {[0,1,2].map(i => <Slot key={i} side="blue" index={i} />)}
-                        
+                        {[0,1,2].map(i => (
+                            <div key={i} className="flex items-center gap-2">
+                                <SlotHistory side="blue" index={i} align="left" />
+                                <div className="flex-1"><Slot side="blue" index={i} /></div>
+                            </div>
+                        ))}
                         <div className="relative py-2">
                             <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                                <div className="w-full border-t border-blue-500/20"></div>
+                                <div className="w-full border-t border-blue-500/20" />
                             </div>
                         </div>
-
-                        {[3,4].map(i => <Slot key={i} side="blue" index={i} />)}
+                        {[3,4].map(i => (
+                            <div key={i} className="flex items-center gap-2">
+                                <SlotHistory side="blue" index={i} align="left" />
+                                <div className="flex-1"><Slot side="blue" index={i} /></div>
+                            </div>
+                        ))}
                     </div>
                 </div>
 
                 {/* CHAMPION SELECTION */}
                 <div className="md:col-span-6 order-1 md:order-2 flex flex-col gap-4">
 
-                    {/* Draft Title Section */}
-                    <div className="flex items-center justify-center">
-                        {isEditingTitle && !isReadOnly ? (
-                            <input
-                                autoFocus
-                                value={draftTitle}
-                                onChange={(e) => setDraftTitle(e.target.value)}
-                                onBlur={() => setIsEditingTitle(false)}
-                                onKeyDown={(e) => e.key === 'Enter' && setIsEditingTitle(false)}
-                                className="bg-transparent border-b border-amber-400 outline-none text-2xl font-black italic tracking-widest text-white uppercase text-center px-4"
-                            />
-                        ) : (
-                            <div className="flex items-center group gap-3">
-                                <h2 className="text-2xl font-black italic tracking-widest text-white uppercase">
-                                    {draftTitle}
-                                </h2>
-                                {!isReadOnly && (
-                                    <button
-                                        onClick={() => setIsEditingTitle(true)}
-                                            className="transition-opacity p-1 hover:bg-white/5 rounded-md text-white/30 hover:text-white"
-                                    >
-                                        <Pencil size={18} />
-                                    </button>
-                                )}
-                            </div>
+                    {/* Game Tabs */}
+                    <div className="flex items-center justify-center gap-3">
+                        <div className="flex items-center gap-1 p-1 rounded-2xl bg-white/5 border border-white/10">
+                            {games.map((_, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => setCurrentGameIndex(i)}
+                                    className={`px-4 py-1.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all
+                                        ${currentGameIndex === i
+                                            ? 'bg-white/10 text-white shadow-sm'
+                                            : 'text-white/30 hover:text-white/70'}`}
+                                >
+                                    G{i + 1}
+                                </button>
+                            ))}
+                            {!isReadOnly && isFearless && games.length < 7 && (
+                                <button
+                                    onClick={addNextGame}
+                                    disabled={!canAddNextGame}
+                                    title={canAddNextGame ? `Add Game ${games.length + 1}` : 'Add picks before proceeding'}
+                                    className="px-3 py-1.5 rounded-xl text-xs font-black text-amber-400/40 hover:text-amber-400 hover:bg-amber-400/10 transition-all disabled:cursor-not-allowed disabled:opacity-25"
+                                >
+                                    + G{games.length + 1}
+                                </button>
+                            )}
+                        </div>
+
+                        {!isReadOnly && (
+                            <button
+                                onClick={() => setIsFearless(f => !f)}
+                                title={isFearless ? 'Fearless Draft ON — click to disable' : 'Enable Fearless Draft'}
+                                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-black uppercase tracking-widest border transition-all
+                                    ${isFearless
+                                        ? 'bg-amber-500/10 border-amber-500/40 text-amber-400'
+                                        : 'bg-white/5 border-white/10 text-white/30 hover:text-white/60 hover:border-white/20'}`}
+                            >
+                                <Shield size={13} />
+                                Fearless
+                            </button>
                         )}
                     </div>
 
@@ -574,7 +662,7 @@ export default function DraftTool() {
                             </div>
                         </div>
 
-                        {/* Role filter container */}
+                        {/* Role filter */}
                         <div className="flex items-center gap-1 p-1.5 rounded-2xl bg-slate-900/80 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.6)] shrink-0">
                             {posList.map((pos) => (
                                 <button
@@ -638,7 +726,7 @@ export default function DraftTool() {
                                         <>
                                             <DropdownMenuSeparator className="bg-white/5 my-2" />
                                             <DropdownMenuLabel className="text-[10px] text-white/20 px-3 py-1">Visibility</DropdownMenuLabel>
-                                            <DropdownMenuItem 
+                                            <DropdownMenuItem
                                                 onClick={() => setIsPublic(!isPublic)}
                                                 className="flex items-center justify-between p-3 rounded-xl cursor-pointer hover:bg-white/5 transition-colors group"
                                             >
@@ -656,7 +744,7 @@ export default function DraftTool() {
                                     )}
 
                                     <DropdownMenuSeparator className="bg-white/5 my-2" />
-                                    
+
                                     <DropdownMenuItem onClick={() => navigator.clipboard.writeText(window.location.href)} className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-white/5 transition-colors group">
                                         <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400 group-hover:bg-purple-500 group-hover:text-white transition-all">
                                             <Link2 size={16} />
@@ -674,8 +762,9 @@ export default function DraftTool() {
                             </DropdownMenu>
                         </div>
                     </div>
-                    
-                    <div className="bg-white/5 border border-white/10 rounded-2xl backdrop-blur-3xl relative overflow-hidden z-10 flex-1 flex flex-col max-h-[740px]">
+
+                    {/* Champion pool */}
+                    <div className="bg-white/5 border border-white/10 rounded-2xl backdrop-blur-3xl relative overflow-hidden z-10 flex-1 flex flex-col max-h-[700px]">
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
                         <ScrollArea className="flex-1 w-full">
                             <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2 p-4">
@@ -683,7 +772,8 @@ export default function DraftTool() {
                                     {filteredChampions.map(([key, champ]) => {
                                         const isBanned = [...selected.blueBan, ...selected.redBan].some(s => s?.id === champ.id);
                                         const isPicked = [...selected.blue, ...selected.red].some(s => s?.id === champ.id);
-                                        const isUnavailable = isBanned || isPicked;
+                                        const isFearlessBanned = fearlessBans.some(s => s?.id === champ.id);
+                                        const isUnavailable = isBanned || isPicked || isFearlessBanned;
 
                                         return (
                                             <motion.div
@@ -703,13 +793,10 @@ export default function DraftTool() {
                                                     fill
                                                     className={`object-cover transition-transform duration-700 group-hover:scale-110 ${isUnavailable ? 'grayscale opacity-30' : ''}`}
                                                 />
-                                                
+
                                                 {isBanned && (
                                                     <div className="absolute inset-0 flex items-center justify-center">
-                                                        <motion.div
-                                                            initial={{ scale: 0.5, opacity: 0 }}
-                                                            animate={{ scale: 1, opacity: 1 }}
-                                                        >
+                                                        <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
                                                             <Ban className="text-red-600 w-8 h-8 stroke-[3px] drop-shadow-[0_0_8px_rgba(220,38,38,0.8)]" />
                                                         </motion.div>
                                                     </div>
@@ -717,11 +804,16 @@ export default function DraftTool() {
 
                                                 {isPicked && (
                                                     <div className="absolute inset-0 flex items-center justify-center">
-                                                        <motion.div
-                                                            initial={{ scale: 0.5, opacity: 0 }}
-                                                            animate={{ scale: 1, opacity: 1 }}
-                                                        >
+                                                        <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
                                                             <Check className="text-emerald-500 w-10 h-10 stroke-[4px] drop-shadow-[0_0_10px_rgba(16,185,129,0.8)]" />
+                                                        </motion.div>
+                                                    </div>
+                                                )}
+
+                                                {isFearlessBanned && (
+                                                    <div className="absolute inset-0 flex items-center justify-center">
+                                                        <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
+                                                            <Shield className="text-amber-400 w-8 h-8 stroke-[3px] drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]" />
                                                         </motion.div>
                                                     </div>
                                                 )}
@@ -736,6 +828,18 @@ export default function DraftTool() {
                             </div>
                         </ScrollArea>
                     </div>
+
+                    {/* Proceed to next game button */}
+                    {!isReadOnly && isFearless && canAddNextGame && games.length < 7 && currentGameIndex === games.length - 1 && (
+                        <button
+                            onClick={addNextGame}
+                            className="w-full py-3 rounded-2xl border border-amber-500/30 bg-amber-500/5 text-amber-400 font-black text-xs uppercase tracking-widest hover:bg-amber-500/10 transition-all flex items-center justify-center gap-2"
+                        >
+                            <Shield size={14} />
+                            Proceed to Game {games.length + 1}
+                            <ChevronRight size={14} />
+                        </button>
+                    )}
 
                 </div>
 
@@ -762,7 +866,7 @@ export default function DraftTool() {
                                         <Pencil size={16} />
                                     </button>
                                 )}
-                                    <h2 className="text-2xl font-black italic tracking-tighter text-red-400">
+                                <h2 className="text-2xl font-black italic tracking-tighter text-red-400">
                                     {redTeamName}
                                 </h2>
                             </div>
@@ -778,17 +882,25 @@ export default function DraftTool() {
                         </div>
                     </div>
 
-                    {/* PICKS SECTION */}
+                    {/* PICKS — fearless history icon right of each slot */}
                     <div className="space-y-4 flex-1">
-                        {[0,1,2].map(i => <Slot key={i} side="red" index={i} />)}
-                        
+                        {[0,1,2].map(i => (
+                            <div key={i} className="flex items-center gap-2">
+                                <div className="flex-1"><Slot side="red" index={i} /></div>
+                                <SlotHistory side="red" index={i} align="right" />
+                            </div>
+                        ))}
                         <div className="relative py-2">
                             <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                                <div className="w-full border-t border-red-500/20"></div>
+                                <div className="w-full border-t border-red-500/20" />
                             </div>
                         </div>
-
-                        {[3,4].map(i => <Slot key={i} side="red" index={i} />)}
+                        {[3,4].map(i => (
+                            <div key={i} className="flex items-center gap-2">
+                                <div className="flex-1"><Slot side="red" index={i} /></div>
+                                <SlotHistory side="red" index={i} align="right" />
+                            </div>
+                        ))}
                     </div>
                 </div>
 
@@ -816,11 +928,11 @@ export default function DraftTool() {
                             >
                                 <X size={20} />
                             </button>
-                            
+
                             <h2 className="text-3xl font-black italic tracking-tighter text-white uppercase text-center mb-6">
                                 {authMode === 'login' ? 'Welcome Back' : 'Join the Draft'}
                             </h2>
-                            
+
                             <form onSubmit={handleAuthSubmit} className="space-y-4">
                                 <div>
                                     <label className="block text-xs font-bold text-white/50 uppercase tracking-widest mb-1 ml-1">Email</label>
@@ -844,13 +956,13 @@ export default function DraftTool() {
                                         placeholder="••••••••"
                                     />
                                 </div>
-                                
+
                                 {authError && (
                                     <div className="text-red-400 text-xs font-bold bg-red-400/10 border border-red-400/20 p-3 rounded-xl text-center">
                                         {authError}
                                     </div>
                                 )}
-                                
+
                                 <button
                                     type="submit"
                                     disabled={authLoading}
@@ -859,14 +971,14 @@ export default function DraftTool() {
                                     {authLoading ? 'Processing...' : (authMode === 'login' ? 'Sign In' : 'Sign Up')}
                                 </button>
                             </form>
-                            
+
                             <div className="relative py-6 flex items-center justify-center">
                                 <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                                    <div className="w-full border-t border-white/10"></div>
+                                    <div className="w-full border-t border-white/10" />
                                 </div>
                                 <span className="relative bg-slate-900 px-4 text-xs font-bold text-white/30 uppercase tracking-widest">Or</span>
                             </div>
-                            
+
                             <button
                                 onClick={handleGoogleLogin}
                                 type="button"
@@ -880,7 +992,7 @@ export default function DraftTool() {
                                 </svg>
                                 Continue with Google
                             </button>
-                            
+
                             <div className="mt-6 text-center">
                                 <button
                                     onClick={() => {

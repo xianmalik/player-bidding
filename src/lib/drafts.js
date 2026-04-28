@@ -54,6 +54,7 @@ export function transformDraftsForModal(drafts) {
             id: draft.id,
             name: draft.name || `Draft ${new Date(draft.created_at).toLocaleDateString()}`,
             createdAt: draft.created_at,
+            isPublic: draft.is_public || false,
             blueTeam: {
                 name: draftData.blueTeamName || 'Blue Team',
                 champions: blueTeamChamps
