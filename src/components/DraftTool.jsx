@@ -169,6 +169,19 @@ export default function DraftTool() {
 
         if (data?.draft_data) {
           const dd = data.draft_data;
+
+          if (
+            !dd ||
+            typeof dd !== "object" ||
+            Array.isArray(dd) ||
+            (dd.games !== undefined && !Array.isArray(dd.games)) ||
+            (dd.games && dd.games.length > 7)
+          ) {
+            toast.error("Draft data is corrupted.");
+            setIsLoadingDraft(false);
+            return;
+          }
+
           setDraftOwnerId(data.user_id);
           setIsPublic(data.is_public);
           if (dd.blueTeamName) setBlueTeamName(dd.blueTeamName);
@@ -229,7 +242,11 @@ export default function DraftTool() {
     }
 
     if (result.error) {
-      setAuthError(result.error.message);
+      setAuthError(
+        authMode === "signup"
+          ? "Could not create account. Please check your details and try again."
+          : "Invalid email or password. Please try again."
+      );
     } else {
       setIsAuthModalOpen(false);
       if (authMode === "signup") {
@@ -243,9 +260,22 @@ export default function DraftTool() {
     await supabase.auth.signOut();
   };
 
+  const MAX_TEAM_NAME = 64;
+  const MAX_DRAFT_NAME = 128;
+
   const handleSaveDraft = async () => {
     if (!user) {
       toast.error("Please log in with Google to save your draft.");
+      return;
+    }
+
+    if (blueTeamName.length > MAX_TEAM_NAME || redTeamName.length > MAX_TEAM_NAME) {
+      toast.error("Team name must be 64 characters or fewer.");
+      return;
+    }
+    const seriesName = `${blueTeamName} vs ${redTeamName}`;
+    if (seriesName.length > MAX_DRAFT_NAME) {
+      toast.error("Draft name must be 128 characters or fewer.");
       return;
     }
 
@@ -263,7 +293,6 @@ export default function DraftTool() {
         swapped: g.swapped || false,
       })),
     };
-    const seriesName = `${blueTeamName} vs ${redTeamName}`;
 
     if (draftId && user.id === draftOwnerId) {
       const { error } = await supabase
@@ -603,6 +632,7 @@ export default function DraftTool() {
                 onChange={(e) => setLeftTeamName(e.target.value)}
                 onBlur={() => setIsEditingBlue(false)}
                 onKeyDown={(e) => e.key === "Enter" && setIsEditingBlue(false)}
+                maxLength={64}
                 className="w-full bg-white/5 border-b border-blue-500 outline-none text-2xl font-black italic tracking-tighter text-blue-400 placeholder:text-blue-400/50 px-2 py-1 rounded-t-md"
                 placeholder="Blue Team"
               />
@@ -1020,6 +1050,7 @@ export default function DraftTool() {
                 onChange={(e) => setRightTeamName(e.target.value)}
                 onBlur={() => setIsEditingRed(false)}
                 onKeyDown={(e) => e.key === "Enter" && setIsEditingRed(false)}
+                maxLength={64}
                 className="w-full bg-white/5 border-b border-red-500 outline-none text-2xl font-black italic tracking-tighter text-red-400 text-right placeholder:text-red-400/50 px-2 py-1 rounded-t-md"
                 placeholder="Red Team"
               />
