@@ -12,7 +12,7 @@ import {
     DropdownMenuItem,
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { Search, Ban, User, X, Command, Check, RotateCcw, Download, Share2, Link2, Save, LogIn, LogOut, MoreVertical, Globe, Lock, Pencil, Shield, ChevronRight } from 'lucide-react';
+import { Search, Ban, User, X, Command, Check, RotateCcw, Download, Share2, Link2, Save, LogIn, LogOut, MoreVertical, Globe, Lock, Pencil, Swords, ChevronRight } from 'lucide-react';
 import html2canvas from 'html2canvas';
 
 import Image from 'next/image';
@@ -617,7 +617,7 @@ export default function DraftTool() {
                                         ? 'bg-amber-500/10 border-amber-500/40 text-amber-400'
                                         : 'bg-white/5 border-white/10 text-white/30 hover:text-white/60 hover:border-white/20'}`}
                             >
-                                <Shield size={13} />
+                                <Swords size={13} />
                                 Fearless
                             </button>
                         )}
@@ -812,7 +812,7 @@ export default function DraftTool() {
                                                 {isFearlessBanned && (
                                                     <div className="absolute inset-0 flex items-center justify-center">
                                                         <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
-                                                            <Shield className="text-amber-400 w-8 h-8 stroke-[3px] drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]" />
+                                                            <Swords className="text-amber-400 w-8 h-8 stroke-[3px] drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]" />
                                                         </motion.div>
                                                     </div>
                                                 )}
@@ -834,7 +834,7 @@ export default function DraftTool() {
                             onClick={addNextGame}
                             className="w-full py-3 rounded-2xl border border-amber-500/30 bg-amber-500/5 text-amber-400 font-black text-xs uppercase tracking-widest hover:bg-amber-500/10 transition-all flex items-center justify-center gap-2"
                         >
-                            <Shield size={14} />
+                            <Swords size={14} />
                             Proceed to Game {games.length + 1}
                             <ChevronRight size={14} />
                         </button>
