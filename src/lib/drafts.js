@@ -1,4 +1,4 @@
-import { createClient } from './supabaseClient';
+import { createClient } from "./supabaseClient";
 
 /**
  * Fetch all drafts for a specific user
@@ -6,30 +6,27 @@ import { createClient } from './supabaseClient';
  * @returns {Promise<Array>} Array of draft objects
  */
 export async function getUserDrafts(userId) {
-    if (!userId) {
-        console.warn('No user ID provided to getUserDrafts');
-        return [];
+  if (!userId) {
+    return [];
+  }
+
+  try {
+    const supabase = createClient();
+
+    const { data, error } = await supabase
+      .from("drafts")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      return [];
     }
 
-    try {
-        const supabase = createClient();
-        
-        const { data, error } = await supabase
-            .from('drafts')
-            .select('*')
-            .eq('user_id', userId)
-            .order('created_at', { ascending: false });
-
-        if (error) {
-            console.error('Error fetching user drafts:', error);
-            return [];
-        }
-
-        return data || [];
-    } catch (error) {
-        console.error('Unexpected error fetching user drafts:', error);
-        return [];
-    }
+    return data || [];
+  } catch (_error) {
+    return [];
+  }
 }
 
 /**
@@ -38,41 +35,41 @@ export async function getUserDrafts(userId) {
  * @returns {Array} Transformed drafts for modal display
  */
 export function transformDraftsForModal(drafts) {
-    return drafts.map(draft => {
-        const draftData = draft.draft_data || {};
-        const isFearless = draftData.isFearless || false;
+  return drafts.map((draft) => {
+    const draftData = draft.draft_data || {};
+    const isFearless = draftData.isFearless || false;
 
-        // Use latest game for series format, fall back to legacy single-game format
-        let latestGame;
-        if (draftData.games && draftData.games.length > 0) {
-            latestGame = draftData.games[draftData.games.length - 1];
-        } else {
-            latestGame = { blue: draftData.blue || [], red: draftData.red || [] };
-        }
+    // Use latest game for series format, fall back to legacy single-game format
+    let latestGame;
+    if (draftData.games && draftData.games.length > 0) {
+      latestGame = draftData.games[draftData.games.length - 1];
+    } else {
+      latestGame = { blue: draftData.blue || [], red: draftData.red || [] };
+    }
 
-        const blueTeamChamps = (latestGame.blue || [])
-            .filter(champ => champ && champ.id)
-            .map(champ => champ.id);
+    const blueTeamChamps = (latestGame.blue || [])
+      .filter((champ) => champ?.id)
+      .map((champ) => champ.id);
 
-        const redTeamChamps = (latestGame.red || [])
-            .filter(champ => champ && champ.id)
-            .map(champ => champ.id);
+    const redTeamChamps = (latestGame.red || [])
+      .filter((champ) => champ?.id)
+      .map((champ) => champ.id);
 
-        return {
-            id: draft.id,
-            name: draft.name || `Draft ${new Date(draft.created_at).toLocaleDateString()}`,
-            createdAt: draft.created_at,
-            isPublic: draft.is_public || false,
-            isFearless,
-            gameCount: draftData.games ? draftData.games.length : 1,
-            blueTeam: {
-                name: draftData.blueTeamName || 'Blue Team',
-                champions: blueTeamChamps
-            },
-            redTeam: {
-                name: draftData.redTeamName || 'Red Team',
-                champions: redTeamChamps
-            }
-        };
-    });
+    return {
+      id: draft.id,
+      name: draft.name || `Draft ${new Date(draft.created_at).toLocaleDateString()}`,
+      createdAt: draft.created_at,
+      isPublic: draft.is_public || false,
+      isFearless,
+      gameCount: draftData.games ? draftData.games.length : 1,
+      blueTeam: {
+        name: draftData.blueTeamName || "Blue Team",
+        champions: blueTeamChamps,
+      },
+      redTeam: {
+        name: draftData.redTeamName || "Red Team",
+        champions: redTeamChamps,
+      },
+    };
+  });
 }

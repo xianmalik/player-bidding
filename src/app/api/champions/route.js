@@ -1,5 +1,5 @@
-import { PATCH_NO } from '@/lib/const';
-import championRoles from '@/lib/championRoles';
+import championRoles from "@/lib/championRoles";
+import { PATCH_NO } from "@/lib/const";
 
 export const revalidate = 86400;
 
@@ -10,7 +10,7 @@ export async function GET() {
   );
 
   if (!res.ok) {
-    return Response.json({ error: 'Failed to fetch champion data' }, { status: 502 });
+    return Response.json({ error: "Failed to fetch champion data" }, { status: 502 });
   }
 
   const json = await res.json();

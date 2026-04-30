@@ -1,21 +1,21 @@
-import "@/app/globals.css"
+import "@/app/globals.css";
 import { Open_Sans as FontSans } from "next/font/google";
 
-const fontSans = FontSans({
+const _fontSans = FontSans({
   subsets: ["latin"],
   variable: "--font-sans",
-})
+});
 
 const font = FontSans({ subsets: ["latin"] });
 
-import { Toaster } from "@/components/ui/sonner"
-import ChampionDataProvider from "@/components/ChampionDataProvider"
-import type { Metadata } from "next"
+import type { Metadata } from "next";
+import ChampionDataProvider from "@/components/ChampionDataProvider";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: "ArenaDraft",
   description: "League of Legends draft tool",
-}
+};
 
 export default function RootLayout({
   children,
@@ -31,5 +31,5 @@ export default function RootLayout({
         </ChampionDataProvider>
       </body>
     </html>
-  )
+  );
 }

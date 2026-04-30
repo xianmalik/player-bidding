@@ -10,12 +10,20 @@ export default function Footer() {
             ARENA<span className="text-blue-500">PRO</span>
           </span>
         </div>
-        
+
         <div className="flex gap-8 text-[10px] font-bold tracking-[0.2em] text-slate-500">
-          <a href="#" className="hover:text-blue-400 transition-colors uppercase">Documentation</a>
-          <a href="#" className="hover:text-blue-400 transition-colors uppercase">Terms of Service</a>
-          <a href="#" className="hover:text-blue-400 transition-colors uppercase">Support</a>
-          <a href="#" className="hover:text-blue-400 transition-colors uppercase">Status</a>
+          <a href="/" className="hover:text-blue-400 transition-colors uppercase">
+            Documentation
+          </a>
+          <a href="/" className="hover:text-blue-400 transition-colors uppercase">
+            Terms of Service
+          </a>
+          <a href="/" className="hover:text-blue-400 transition-colors uppercase">
+            Support
+          </a>
+          <a href="/" className="hover:text-blue-400 transition-colors uppercase">
+            Status
+          </a>
         </div>
 
         <p className="text-[10px] font-medium text-slate-600 tracking-wider">
@@ -23,5 +31,5 @@ export default function Footer() {
         </p>
       </div>
     </footer>
-  )
+  );
 }

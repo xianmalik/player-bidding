@@ -1,20 +1,20 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import * as MenubarPrimitive from "@radix-ui/react-menubar"
-import { Check, ChevronRight, Circle } from "lucide-react"
+import * as MenubarPrimitive from "@radix-ui/react-menubar";
+import { Check, ChevronRight, Circle } from "lucide-react";
+import * as React from "react";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
-const MenubarMenu = MenubarPrimitive.Menu
+const MenubarMenu = MenubarPrimitive.Menu;
 
-const MenubarGroup = MenubarPrimitive.Group
+const MenubarGroup = MenubarPrimitive.Group;
 
-const MenubarPortal = MenubarPrimitive.Portal
+const MenubarPortal = MenubarPrimitive.Portal;
 
-const MenubarSub = MenubarPrimitive.Sub
+const MenubarSub = MenubarPrimitive.Sub;
 
-const MenubarRadioGroup = MenubarPrimitive.RadioGroup
+const MenubarRadioGroup = MenubarPrimitive.RadioGroup;
 
 const Menubar = React.forwardRef(({ className, ...props }, ref) => (
   <MenubarPrimitive.Root
@@ -25,8 +25,8 @@ const Menubar = React.forwardRef(({ className, ...props }, ref) => (
     )}
     {...props}
   />
-))
-Menubar.displayName = MenubarPrimitive.Root.displayName
+));
+Menubar.displayName = MenubarPrimitive.Root.displayName;
 
 const MenubarTrigger = React.forwardRef(({ className, ...props }, ref) => (
   <MenubarPrimitive.Trigger
@@ -37,8 +37,8 @@ const MenubarTrigger = React.forwardRef(({ className, ...props }, ref) => (
     )}
     {...props}
   />
-))
-MenubarTrigger.displayName = MenubarPrimitive.Trigger.displayName
+));
+MenubarTrigger.displayName = MenubarPrimitive.Trigger.displayName;
 
 const MenubarSubTrigger = React.forwardRef(({ className, inset, children, ...props }, ref) => (
   <MenubarPrimitive.SubTrigger
@@ -53,8 +53,8 @@ const MenubarSubTrigger = React.forwardRef(({ className, inset, children, ...pro
     {children}
     <ChevronRight className="ml-auto h-4 w-4" />
   </MenubarPrimitive.SubTrigger>
-))
-MenubarSubTrigger.displayName = MenubarPrimitive.SubTrigger.displayName
+));
+MenubarSubTrigger.displayName = MenubarPrimitive.SubTrigger.displayName;
 
 const MenubarSubContent = React.forwardRef(({ className, ...props }, ref) => (
   <MenubarPrimitive.SubContent
@@ -65,8 +65,8 @@ const MenubarSubContent = React.forwardRef(({ className, ...props }, ref) => (
     )}
     {...props}
   />
-))
-MenubarSubContent.displayName = MenubarPrimitive.SubContent.displayName
+));
+MenubarSubContent.displayName = MenubarPrimitive.SubContent.displayName;
 
 const MenubarContent = React.forwardRef(
   ({ className, align = "start", alignOffset = -4, sideOffset = 8, ...props }, ref) => (
@@ -84,8 +84,8 @@ const MenubarContent = React.forwardRef(
       />
     </MenubarPrimitive.Portal>
   )
-)
-MenubarContent.displayName = MenubarPrimitive.Content.displayName
+);
+MenubarContent.displayName = MenubarPrimitive.Content.displayName;
 
 const MenubarItem = React.forwardRef(({ className, inset, ...props }, ref) => (
   <MenubarPrimitive.Item
@@ -97,8 +97,8 @@ const MenubarItem = React.forwardRef(({ className, inset, ...props }, ref) => (
     )}
     {...props}
   />
-))
-MenubarItem.displayName = MenubarPrimitive.Item.displayName
+));
+MenubarItem.displayName = MenubarPrimitive.Item.displayName;
 
 const MenubarCheckboxItem = React.forwardRef(({ className, children, checked, ...props }, ref) => (
   <MenubarPrimitive.CheckboxItem
@@ -117,8 +117,8 @@ const MenubarCheckboxItem = React.forwardRef(({ className, children, checked, ..
     </span>
     {children}
   </MenubarPrimitive.CheckboxItem>
-))
-MenubarCheckboxItem.displayName = MenubarPrimitive.CheckboxItem.displayName
+));
+MenubarCheckboxItem.displayName = MenubarPrimitive.CheckboxItem.displayName;
 
 const MenubarRadioItem = React.forwardRef(({ className, children, ...props }, ref) => (
   <MenubarPrimitive.RadioItem
@@ -136,8 +136,8 @@ const MenubarRadioItem = React.forwardRef(({ className, children, ...props }, re
     </span>
     {children}
   </MenubarPrimitive.RadioItem>
-))
-MenubarRadioItem.displayName = MenubarPrimitive.RadioItem.displayName
+));
+MenubarRadioItem.displayName = MenubarPrimitive.RadioItem.displayName;
 
 const MenubarLabel = React.forwardRef(({ className, inset, ...props }, ref) => (
   <MenubarPrimitive.Label
@@ -149,8 +149,8 @@ const MenubarLabel = React.forwardRef(({ className, inset, ...props }, ref) => (
     )}
     {...props}
   />
-))
-MenubarLabel.displayName = MenubarPrimitive.Label.displayName
+));
+MenubarLabel.displayName = MenubarPrimitive.Label.displayName;
 
 const MenubarSeparator = React.forwardRef(({ className, ...props }, ref) => (
   <MenubarPrimitive.Separator
@@ -158,40 +158,31 @@ const MenubarSeparator = React.forwardRef(({ className, ...props }, ref) => (
     className={cn("-mx-1 my-1 h-px bg-white/5", className)}
     {...props}
   />
-))
-MenubarSeparator.displayName = MenubarPrimitive.Separator.displayName
+));
+MenubarSeparator.displayName = MenubarPrimitive.Separator.displayName;
 
-const MenubarShortcut = ({
-  className,
-  ...props
-}) => {
+const MenubarShortcut = ({ className, ...props }) => {
   return (
-    <span
-      className={cn(
-        "ml-auto text-xs tracking-widest text-white/30",
-        className
-      )}
-      {...props}
-    />
-  )
-}
-MenubarShortcut.displayName = "MenubarShortcut"
+    <span className={cn("ml-auto text-xs tracking-widest text-white/30", className)} {...props} />
+  );
+};
+MenubarShortcut.displayName = "MenubarShortcut";
 
 export {
   Menubar,
-  MenubarMenu,
-  MenubarTrigger,
-  MenubarContent,
-  MenubarItem,
-  MenubarSeparator,
-  MenubarLabel,
   MenubarCheckboxItem,
+  MenubarContent,
+  MenubarGroup,
+  MenubarItem,
+  MenubarLabel,
+  MenubarMenu,
+  MenubarPortal,
   MenubarRadioGroup,
   MenubarRadioItem,
-  MenubarPortal,
+  MenubarSeparator,
+  MenubarShortcut,
+  MenubarSub,
   MenubarSubContent,
   MenubarSubTrigger,
-  MenubarGroup,
-  MenubarSub,
-  MenubarShortcut,
-}
+  MenubarTrigger,
+};
