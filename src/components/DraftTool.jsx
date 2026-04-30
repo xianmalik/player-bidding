@@ -596,7 +596,7 @@ export default function DraftTool() {
                                     G{i + 1}
                                 </button>
                             ))}
-                            {!isReadOnly && isFearless && games.length < 7 && (
+                            {!isReadOnly && isFearless && games.length < 5 && (
                                 <button
                                     onClick={addNextGame}
                                     disabled={!canAddNextGame}
@@ -829,7 +829,7 @@ export default function DraftTool() {
                     </div>
 
                     {/* Proceed to next game button */}
-                    {!isReadOnly && isFearless && canAddNextGame && games.length < 7 && currentGameIndex === games.length - 1 && (
+                    {!isReadOnly && isFearless && canAddNextGame && games.length < 5 && currentGameIndex === games.length - 1 && (
                         <button
                             onClick={addNextGame}
                             className="w-full py-3 rounded-2xl border border-amber-500/30 bg-amber-500/5 text-amber-400 font-black text-xs uppercase tracking-widest hover:bg-amber-500/10 transition-all flex items-center justify-center gap-2"

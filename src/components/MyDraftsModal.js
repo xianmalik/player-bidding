@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Shield, Calendar, Clock, Globe, Lock } from 'lucide-react';
+import { Search, Swords, Calendar, Clock, Globe, Lock } from 'lucide-react';
 import { Modal } from './ui/modal';
 import { Input } from './ui/input';
 import ChampionAvatar from './ChampionAvatar';
@@ -116,7 +116,7 @@ export default function MyDraftsModal({ isOpen, onClose, user }) {
                 ) : error ? (
                     <div className="col-span-full text-center py-12">
                         <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Shield className="text-red-600" size={32} />
+                            <Swords className="text-red-600" size={32} />
                         </div>
                         <p className="text-red-400 font-medium text-sm">{error}</p>
                         <button
@@ -129,7 +129,7 @@ export default function MyDraftsModal({ isOpen, onClose, user }) {
                 ) : filteredDrafts.length === 0 ? (
                     <div className="col-span-full text-center py-12">
                         <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Shield className="text-slate-600" size={32} />
+                            <Swords className="text-slate-600" size={32} />
                         </div>
                         <p className="text-white/50 font-medium text-sm">
                             {searchQuery ? 'No drafts found matching your search' : 'No saved drafts'}
@@ -155,6 +155,12 @@ export default function MyDraftsModal({ isOpen, onClose, user }) {
                                         {draft.name}
                                     </h3>
                                     <div className="flex items-center gap-1 ml-2">
+                                        {draft.isFearless && (
+                                            <div className="flex items-center gap-1 px-2 py-1 rounded bg-amber-500/10 text-amber-400" title={`Fearless · ${draft.gameCount} game${draft.gameCount !== 1 ? 's' : ''}`}>
+                                                <Swords size={10} />
+                                                <span className="text-[8px] font-black uppercase tracking-wider">G{draft.gameCount}</span>
+                                            </div>
+                                        )}
                                         {draft.isPublic ? (
                                             <div className="flex items-center gap-1 px-2 py-1 rounded bg-emerald-500/10 text-emerald-400" title="Public">
                                                 <Globe size={10} />
