@@ -1143,6 +1143,29 @@ export default function DraftTool() {
                     className="w-full h-12 bg-black/50 border border-white/10 rounded-xl px-4 text-white focus:outline-none focus:border-amber-400 transition-colors"
                     placeholder="••••••••"
                   />
+                  {authMode === "signup" && password.length > 0 && (() => {
+                    const hasLower = /[a-z]/.test(password);
+                    const hasUpper = /[A-Z]/.test(password);
+                    const hasDigit = /\d/.test(password);
+                    const hasSymbol = /[^a-zA-Z0-9]/.test(password);
+                    const classes = [hasLower, hasUpper, hasDigit, hasSymbol].filter(Boolean).length;
+                    let level, label, color;
+                    if (password.length < 6) { level = 1; label = "Too short"; color = "bg-red-500"; }
+                    else if (password.length < 8 || classes < 2) { level = 2; label = "Weak"; color = "bg-orange-400"; }
+                    else if (classes < 3) { level = 3; label = "Fair"; color = "bg-yellow-400"; }
+                    else if (password.length < 12) { level = 4; label = "Good"; color = "bg-lime-400"; }
+                    else { level = 5; label = "Strong"; color = "bg-green-400"; }
+                    return (
+                      <div className="mt-2 space-y-1">
+                        <div className="flex gap-1">
+                          {[1,2,3,4,5].map((n) => (
+                            <div key={n} className={`h-1 flex-1 rounded-full transition-colors ${n <= level ? color : "bg-white/10"}`} />
+                          ))}
+                        </div>
+                        <p className={`text-xs font-bold ml-1 ${color.replace("bg-", "text-")}`}>{label}</p>
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {authError && (
