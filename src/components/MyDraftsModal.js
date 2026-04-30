@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Calendar, Clock, Globe, Lock, Search, Swords } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getUserDrafts, transformDraftsForModal } from "../lib/drafts";
+import { formatDate, formatTime } from "../lib/dateUtils";
 import useChampionStore from "../stores/championStore";
 import ChampionAvatar from "./ChampionAvatar";
 import { Input } from "./ui/input";
@@ -58,23 +59,6 @@ export default function MyDraftsModal({ isOpen, onClose, user }) {
         draft.redTeam.champions.some((champ) => champ.toLowerCase().includes(query))
     );
   }, [searchQuery, drafts]);
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
-
-  const formatTime = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
 
   const handleDraftClick = (draftId) => {
     // Navigate to draft page

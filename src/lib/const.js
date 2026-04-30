@@ -22,4 +22,30 @@ const posList = [
 
 const PATCH_NO = "16.8.1";
 
+export const DRAFT_LIMITS = {
+  TEAM_NAME_MAX: 64,
+  DRAFT_NAME_MAX: 128,
+  GAMES_MAX: 7,
+  SLOTS_PER_SIDE: 5,
+};
+
+export const CANVAS = {
+  WIDTH: 1920,
+  HEIGHT: 1080,
+  SCALE: 2,
+  BG_COLOR: "#020617",
+};
+
+export const DEBOUNCE_MS = {
+  SEARCH: 200,
+};
+
+export const CHAMPION_FIELD_LIMITS = {
+  ID: 64,
+  KEY: 8,
+  NAME: 64,
+  TITLE: 128,
+  IMAGE_URL: 128,
+};
+
 export { PATCH_NO, posList, rankList };

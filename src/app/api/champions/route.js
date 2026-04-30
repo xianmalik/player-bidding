@@ -1,5 +1,5 @@
 import championRoles from "@/lib/championRoles";
-import { PATCH_NO } from "@/lib/const";
+import { CHAMPION_FIELD_LIMITS, PATCH_NO } from "@/lib/const";
 
 export const revalidate = 86400;
 
@@ -19,11 +19,11 @@ export async function GET() {
     Object.entries(json.data).map(([key, champ]) => [
       key,
       {
-        id:    String(champ.id ?? "").slice(0, 64),
-        key:   String(champ.key ?? "").slice(0, 8),
-        name:  String(champ.name ?? "").slice(0, 64),
-        title: String(champ.title ?? "").slice(0, 128),
-        image: { full: String(champ.image?.full ?? "").slice(0, 128) },
+        id:    String(champ.id ?? "").slice(0, CHAMPION_FIELD_LIMITS.ID),
+        key:   String(champ.key ?? "").slice(0, CHAMPION_FIELD_LIMITS.KEY),
+        name:  String(champ.name ?? "").slice(0, CHAMPION_FIELD_LIMITS.NAME),
+        title: String(champ.title ?? "").slice(0, CHAMPION_FIELD_LIMITS.TITLE),
+        image: { full: String(champ.image?.full ?? "").slice(0, CHAMPION_FIELD_LIMITS.IMAGE_URL) },
         roles: championRoles[champ.id] ?? [],
       },
     ])
