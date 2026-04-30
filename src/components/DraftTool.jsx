@@ -250,9 +250,8 @@ export default function DraftTool() {
             } else {
                 setDraftId(data.id);
                 setDraftOwnerId(user.id);
-                const link = `${window.location.origin}/?draft=${data.id}`;
-                navigator.clipboard.writeText(link);
-                toast.success('Draft saved!', { description: 'Link copied to clipboard.' });
+                window.history.pushState(null, '', `/?draft=${data.id}`);
+                toast.success('Draft saved!');
             }
         }
     };
