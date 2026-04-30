@@ -12,7 +12,7 @@ import {
     DropdownMenuItem,
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { Search, Ban, User, X, Command, Check, RotateCcw, Download, Share2, Link2, Save, LogIn, LogOut, MoreVertical, Globe, Lock, Pencil, Swords, ChevronRight } from 'lucide-react';
+import { Search, Ban, User, X, Command, Check, RotateCcw, Download, Share2, Link2, Save, LogIn, LogOut, MoreVertical, Globe, Lock, Pencil, Swords, ChevronRight, ArrowLeftRight } from 'lucide-react';
 import html2canvas from 'html2canvas';
 
 import Image from 'next/image';
@@ -29,6 +29,7 @@ const emptyGame = () => ({
     redBan: Array(5).fill(null),
     blue: Array(5).fill(null),
     red: Array(5).fill(null),
+    swapped: false,
 });
 
 export default function DraftTool() {
@@ -76,6 +77,21 @@ export default function DraftTool() {
 
     // Derived: current game's picks/bans
     const selected = games[currentGameIndex] ?? emptyGame();
+
+    const isSwapped = selected.swapped || false;
+    const leftTeamName  = isSwapped ? redTeamName  : blueTeamName;
+    const rightTeamName = isSwapped ? blueTeamName : redTeamName;
+    const setLeftTeamName  = isSwapped ? setRedTeamName  : setBlueTeamName;
+    const setRightTeamName = isSwapped ? setBlueTeamName : setRedTeamName;
+
+    const toggleSideSwap = () => {
+        setCurrentGame(prev => ({ ...prev, swapped: !prev.swapped }));
+    };
+
+    const leftPickSide  = isSwapped ? 'red'     : 'blue';
+    const leftBanSide   = isSwapped ? 'redBan'  : 'blueBan';
+    const rightPickSide = isSwapped ? 'blue'    : 'red';
+    const rightBanSide  = isSwapped ? 'blueBan' : 'redBan';
 
     // Derived: fearless bans = all picks from all previous games in this series
     const fearlessBans = isFearless
@@ -142,10 +158,11 @@ export default function DraftTool() {
                     if (dd.games) {
                         // New series format
                         setGames(dd.games.map(g => ({
-                            blueBan: g.blueBan ?? Array(5).fill(null),
-                            redBan:  g.redBan  ?? Array(5).fill(null),
-                            blue:    g.blue    ?? Array(5).fill(null),
-                            red:     g.red     ?? Array(5).fill(null),
+                            blueBan:  g.blueBan ?? Array(5).fill(null),
+                            redBan:   g.redBan  ?? Array(5).fill(null),
+                            blue:     g.blue    ?? Array(5).fill(null),
+                            red:      g.red     ?? Array(5).fill(null),
+                            swapped:  g.swapped ?? false,
                         })));
                         setCurrentGameIndex(dd.currentGame ?? 0);
                         setIsFearless(dd.isFearless ?? false);
@@ -218,10 +235,11 @@ export default function DraftTool() {
             redTeamName,
             currentGame: currentGameIndex,
             games: games.map(g => ({
-                blueBan: g.blueBan.map(stripChamp),
-                redBan:  g.redBan.map(stripChamp),
-                blue:    g.blue.map(stripChamp),
-                red:     g.red.map(stripChamp),
+                blueBan:  g.blueBan.map(stripChamp),
+                redBan:   g.redBan.map(stripChamp),
+                blue:     g.blue.map(stripChamp),
+                red:      g.red.map(stripChamp),
+                swapped:  g.swapped || false,
             })),
         };
         const seriesName = `${blueTeamName} vs ${redTeamName}`;
@@ -397,11 +415,11 @@ export default function DraftTool() {
         return matchesSearch && matchesRole;
     });
 
-    const Slot = ({ side, index, type = 'pick' }) => {
+    const Slot = ({ side, index, type = 'pick', displayAs }) => {
         const isBan = type === 'ban';
         const data = selected[side][index];
         const isActive = currentSide === side && currentSelection === index;
-        const isBlue = side.startsWith('blue');
+        const isBlue = (displayAs ?? side).startsWith('blue');
 
         const imageUrl = data
             ? (isBan
@@ -523,8 +541,8 @@ export default function DraftTool() {
                         {isEditingBlue && !isReadOnly ? (
                             <input
                                 autoFocus
-                                value={blueTeamName}
-                                onChange={(e) => setBlueTeamName(e.target.value)}
+                                value={leftTeamName}
+                                onChange={(e) => setLeftTeamName(e.target.value)}
                                 onBlur={() => setIsEditingBlue(false)}
                                 onKeyDown={(e) => e.key === 'Enter' && setIsEditingBlue(false)}
                                 className="w-full bg-white/5 border-b border-blue-500 outline-none text-2xl font-black italic tracking-tighter text-blue-400 placeholder:text-blue-400/50 px-2 py-1 rounded-t-md"
@@ -533,7 +551,7 @@ export default function DraftTool() {
                         ) : (
                             <div className="flex items-center group gap-2">
                                 <h2 className="text-2xl font-black italic tracking-tighter text-blue-400">
-                                    {blueTeamName}
+                                    {leftTeamName}
                                 </h2>
                                 {!isReadOnly && (
                                     <button
@@ -547,11 +565,11 @@ export default function DraftTool() {
                         )}
                         <div className="flex items-center justify-between w-full">
                             <div className="grid grid-cols-3 gap-2">
-                                {[0,1,2].map(i => <Slot key={i} side="blueBan" index={i} type="ban" />)}
+                                {[0,1,2].map(i => <Slot key={i} side={leftBanSide} index={i} type="ban" displayAs="blueBan" />)}
                             </div>
                             <div className="h-10 w-[1px] bg-blue-500/20" />
                             <div className="grid grid-cols-2 gap-2">
-                                {[3,4].map(i => <Slot key={i} side="blueBan" index={i} type="ban" />)}
+                                {[3,4].map(i => <Slot key={i} side={leftBanSide} index={i} type="ban" displayAs="blueBan" />)}
                             </div>
                         </div>
                     </div>
@@ -560,8 +578,8 @@ export default function DraftTool() {
                     <div className="space-y-4 flex-1">
                         {[0,1,2].map(i => (
                             <div key={i} className="flex items-center gap-2">
-                                <SlotHistory side="blue" index={i} align="left" />
-                                <div className="flex-1"><Slot side="blue" index={i} /></div>
+                                <SlotHistory side={leftPickSide} index={i} align="left" />
+                                <div className="flex-1"><Slot side={leftPickSide} index={i} displayAs="blue" /></div>
                             </div>
                         ))}
                         <div className="relative py-2">
@@ -571,8 +589,8 @@ export default function DraftTool() {
                         </div>
                         {[3,4].map(i => (
                             <div key={i} className="flex items-center gap-2">
-                                <SlotHistory side="blue" index={i} align="left" />
-                                <div className="flex-1"><Slot side="blue" index={i} /></div>
+                                <SlotHistory side={leftPickSide} index={i} align="left" />
+                                <div className="flex-1"><Slot side={leftPickSide} index={i} displayAs="blue" /></div>
                             </div>
                         ))}
                     </div>
@@ -609,17 +627,32 @@ export default function DraftTool() {
                         </div>
 
                         {!isReadOnly && (
-                            <button
-                                onClick={() => setIsFearless(f => !f)}
-                                title={isFearless ? 'Fearless Draft ON — click to disable' : 'Enable Fearless Draft'}
-                                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-black uppercase tracking-widest border transition-all
-                                    ${isFearless
-                                        ? 'bg-amber-500/10 border-amber-500/40 text-amber-400'
-                                        : 'bg-white/5 border-white/10 text-white/30 hover:text-white/60 hover:border-white/20'}`}
-                            >
-                                <Swords size={13} />
-                                Fearless
-                            </button>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => setIsFearless(f => !f)}
+                                    title={isFearless ? 'Fearless Draft ON — click to disable' : 'Enable Fearless Draft'}
+                                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-black uppercase tracking-widest border transition-all
+                                        ${isFearless
+                                            ? 'bg-amber-500/10 border-amber-500/40 text-amber-400'
+                                            : 'bg-white/5 border-white/10 text-white/30 hover:text-white/60 hover:border-white/20'}`}
+                                >
+                                    <Swords size={13} />
+                                    Fearless
+                                </button>
+                                {currentGameIndex > 0 && (
+                                    <button
+                                        onClick={toggleSideSwap}
+                                        title="Swap sides for this game"
+                                        className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-black uppercase tracking-widest border transition-all
+                                            ${isSwapped
+                                                ? 'bg-purple-500/10 border-purple-500/40 text-purple-400'
+                                                : 'bg-white/5 border-white/10 text-white/30 hover:text-white/60 hover:border-white/20'}`}
+                                    >
+                                        <ArrowLeftRight size={13} />
+                                        Swap
+                                    </button>
+                                )}
+                            </div>
                         )}
                     </div>
 
@@ -848,8 +881,8 @@ export default function DraftTool() {
                         {isEditingRed && !isReadOnly ? (
                             <input
                                 autoFocus
-                                value={redTeamName}
-                                onChange={(e) => setRedTeamName(e.target.value)}
+                                value={rightTeamName}
+                                onChange={(e) => setRightTeamName(e.target.value)}
                                 onBlur={() => setIsEditingRed(false)}
                                 onKeyDown={(e) => e.key === 'Enter' && setIsEditingRed(false)}
                                 className="w-full bg-white/5 border-b border-red-500 outline-none text-2xl font-black italic tracking-tighter text-red-400 text-right placeholder:text-red-400/50 px-2 py-1 rounded-t-md"
@@ -866,17 +899,17 @@ export default function DraftTool() {
                                     </button>
                                 )}
                                 <h2 className="text-2xl font-black italic tracking-tighter text-red-400">
-                                    {redTeamName}
+                                    {rightTeamName}
                                 </h2>
                             </div>
                         )}
                         <div className="flex items-center justify-between w-full">
                             <div className="grid grid-cols-2 gap-2">
-                                {[3,4].map(i => <Slot key={i} side="redBan" index={i} type="ban" />)}
+                                {[3,4].map(i => <Slot key={i} side={rightBanSide} index={i} type="ban" displayAs="redBan" />)}
                             </div>
                             <div className="h-10 w-[1px] bg-red-500/20" />
                             <div className="grid grid-cols-3 gap-2">
-                                {[0,1,2].map(i => <Slot key={i} side="redBan" index={i} type="ban" />)}
+                                {[0,1,2].map(i => <Slot key={i} side={rightBanSide} index={i} type="ban" displayAs="redBan" />)}
                             </div>
                         </div>
                     </div>
@@ -885,8 +918,8 @@ export default function DraftTool() {
                     <div className="space-y-4 flex-1">
                         {[0,1,2].map(i => (
                             <div key={i} className="flex items-center gap-2">
-                                <div className="flex-1"><Slot side="red" index={i} /></div>
-                                <SlotHistory side="red" index={i} align="right" />
+                                <div className="flex-1"><Slot side={rightPickSide} index={i} displayAs="red" /></div>
+                                <SlotHistory side={rightPickSide} index={i} align="right" />
                             </div>
                         ))}
                         <div className="relative py-2">
@@ -896,8 +929,8 @@ export default function DraftTool() {
                         </div>
                         {[3,4].map(i => (
                             <div key={i} className="flex items-center gap-2">
-                                <div className="flex-1"><Slot side="red" index={i} /></div>
-                                <SlotHistory side="red" index={i} align="right" />
+                                <div className="flex-1"><Slot side={rightPickSide} index={i} displayAs="red" /></div>
+                                <SlotHistory side={rightPickSide} index={i} align="right" />
                             </div>
                         ))}
                     </div>
