@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { LogIn, LogOut, Sword, ChevronDown, User, Settings, Shield, Plus } from 'lucide-react';
+import { LogIn, LogOut, ChevronDown, User, Settings, Shield, Plus } from 'lucide-react';
+import Image from 'next/image';
 import { 
     DropdownMenu, 
     DropdownMenuContent, 
@@ -27,11 +28,15 @@ export default function Header({
                 <nav className="max-w-[1800px] mx-auto px-4 lg:px-8 h-14 flex items-center justify-between">
                     {/* LOGO */}
                     <div className="flex items-center gap-2 lg:gap-3">
-                        <div className="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-lg lg:rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 shrink-0">
-                            <Sword className="text-white w-5 h-5 lg:w-6 lg:h-6" />
-                        </div>
+                        <Image
+                            src="/assets/img/arena-draft-logo.png"
+                            alt="ArenaDraft"
+                            width={64}
+                            height={64}
+                            className="w-12 h-12 lg:w-16 lg:h-16 shrink-0"
+                        />
                         <h1 className="text-xl lg:text-2xl font-black italic tracking-tighter text-white uppercase">
-                            Champion <span className="text-amber-400">Draft</span>
+                            Arena <span className="text-amber-400">Draft</span>
                         </h1>
                     </div>
 

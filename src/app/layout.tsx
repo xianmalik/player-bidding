@@ -10,6 +10,12 @@ const font = FontSans({ subsets: ["latin"] });
 
 import { Toaster } from "@/components/ui/sonner"
 import ChampionDataProvider from "@/components/ChampionDataProvider"
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "ArenaDraft",
+  description: "League of Legends draft tool",
+}
 
 export default function RootLayout({
   children,
