@@ -25,7 +25,8 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline'",
+              // unsafe-eval is required by Next.js Fast Refresh in dev; safe to exclude in production
+              `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ""}`,
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https://ddragon.leagueoflegends.com",
               "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
