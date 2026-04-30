@@ -18,7 +18,14 @@ export async function GET() {
   const data = Object.fromEntries(
     Object.entries(json.data).map(([key, champ]) => [
       key,
-      { ...champ, roles: championRoles[champ.id] ?? [] },
+      {
+        id:    String(champ.id ?? "").slice(0, 64),
+        key:   String(champ.key ?? "").slice(0, 8),
+        name:  String(champ.name ?? "").slice(0, 64),
+        title: String(champ.title ?? "").slice(0, 128),
+        image: { full: String(champ.image?.full ?? "").slice(0, 128) },
+        roles: championRoles[champ.id] ?? [],
+      },
     ])
   );
 

@@ -153,8 +153,9 @@ export default function DraftTool() {
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
     const id = searchParams.get("draft");
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-    if (!id) return;
+    if (!id || !UUID_RE.test(id)) return;
 
     setIsLoadingDraft(true);
     setDraftId(id);
@@ -170,12 +171,30 @@ export default function DraftTool() {
         if (data?.draft_data) {
           const dd = data.draft_data;
 
+          const isValidChamp = (c) =>
+            c === null ||
+            (typeof c === "object" &&
+              !Array.isArray(c) &&
+              typeof c.id === "string" && c.id.length <= 64 &&
+              typeof c.key === "string" && c.key.length <= 8);
+
+          const isValidGame = (g) =>
+            g &&
+            typeof g === "object" &&
+            !Array.isArray(g) &&
+            Array.isArray(g.blueBan) && g.blueBan.length === 5 && g.blueBan.every(isValidChamp) &&
+            Array.isArray(g.redBan)  && g.redBan.length  === 5 && g.redBan.every(isValidChamp)  &&
+            Array.isArray(g.blue)    && g.blue.length    === 5 && g.blue.every(isValidChamp)    &&
+            Array.isArray(g.red)     && g.red.length     === 5 && g.red.every(isValidChamp)     &&
+            (g.swapped === undefined || typeof g.swapped === "boolean");
+
           if (
             !dd ||
             typeof dd !== "object" ||
             Array.isArray(dd) ||
             (dd.games !== undefined && !Array.isArray(dd.games)) ||
-            (dd.games && dd.games.length > 7)
+            (dd.games && dd.games.length > 7) ||
+            (dd.games && !dd.games.every(isValidGame))
           ) {
             toast.error("Draft data is corrupted.");
             setIsLoadingDraft(false);
@@ -225,7 +244,7 @@ export default function DraftTool() {
   const handleGoogleLogin = async () => {
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: window.location.origin },
+      options: { redirectTo: window.location.origin /* never accept user-controlled input here — open redirect risk */ },
     });
   };
 
@@ -294,11 +313,12 @@ export default function DraftTool() {
       })),
     };
 
-    if (draftId && user.id === draftOwnerId) {
+    if (draftId) {
       const { error } = await supabase
         .from("drafts")
         .update({ draft_data: minimalDraftData, name: seriesName, is_public: isPublic })
-        .eq("id", draftId);
+        .eq("id", draftId)
+        .eq("user_id", user.id);
 
       if (error) {
         toast.error("Failed to update draft.");
@@ -384,7 +404,9 @@ export default function DraftTool() {
       try {
         const response = await axios.get("/api/champions");
         setChampions(response.data);
-      } catch (_error) {}
+      } catch (_error) {
+        toast.error("Failed to load champions. Please refresh.");
+      }
     };
     fetchChampions();
 
