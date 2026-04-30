@@ -85,8 +85,9 @@ export default function DraftTool() {
             .filter(Boolean)
         : [];
 
+    const lastGame = games[games.length - 1];
     const canAddNextGame =
-        selected.blue.some(Boolean) || selected.red.some(Boolean);
+        lastGame.blue.some(Boolean) || lastGame.red.some(Boolean);
 
     // Update current game's state (mirrors the old setSelected API)
     const setCurrentGame = useCallback((updater) => {
@@ -101,7 +102,7 @@ export default function DraftTool() {
 
     const addNextGame = () => {
         setGames(prev => [...prev, emptyGame()]);
-        setCurrentGameIndex(games.length); // games.length is the new index
+        setCurrentGameIndex(games.length);
     };
 
     useEffect(() => {
