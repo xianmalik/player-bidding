@@ -351,7 +351,7 @@ export default function DraftTool() {
 
     const canvas = await html2canvas(pageRef.current, {
       useCORS: true,
-      allowTaint: true,
+      allowTaint: false,
       backgroundColor: "#020617",
       scale: 2,
       onclone: (clonedDoc) => {
@@ -374,8 +374,9 @@ export default function DraftTool() {
     ctx.fillRect(0, 0, TARGET_W, TARGET_H);
     ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height, destX, destY, destW, destH);
 
+    const sanitizeFilename = (s) => s.replace(/[^a-zA-Z0-9_\-]/g, "_").slice(0, 64);
     const gamePart = isFearless ? `Game${currentGameIndex + 1}` : "Draft";
-    const fileName = `${blueTeamName.replace(/\s+/g, "_")}_vs_${redTeamName.replace(/\s+/g, "_")}_${gamePart}.png`;
+    const fileName = `${sanitizeFilename(blueTeamName)}_vs_${sanitizeFilename(redTeamName)}_${gamePart}.png`;
     const link = document.createElement("a");
     link.download = fileName;
     link.href = out.toDataURL("image/png");
@@ -480,6 +481,13 @@ export default function DraftTool() {
       selectChamp(payload.champKey, targetSide, targetIndex);
     } else if (payload.type === "slot") {
       const { side: srcSide, index: srcIndex } = payload;
+      const validSides = ["blue", "red", "blueBan", "redBan"];
+      if (
+        !validSides.includes(srcSide) ||
+        !validSides.includes(targetSide) ||
+        !Number.isInteger(srcIndex) || srcIndex < 0 || srcIndex > 4 ||
+        !Number.isInteger(targetIndex) || targetIndex < 0 || targetIndex > 4
+      ) return;
       if (srcSide === targetSide && srcIndex === targetIndex) return;
       setCurrentGame((prev) => {
         const next = {
