@@ -475,21 +475,20 @@ export default function DraftTool() {
         if (history.length === 0) return null;
 
         return (
-            <div className={`flex flex-col gap-1 items-center justify-center shrink-0 w-16 h-32 ${align === 'right' ? 'order-last' : 'order-first'}`}>
+            <div className={`grid grid-rows-2 grid-flow-col gap-1 shrink-0 ${align === 'right' ? 'order-last' : 'order-first'}`}>
                 {history.map(({ champ, gameNum }) => (
                     <div
                         key={gameNum}
                         title={`G${gameNum}: ${champ.id}`}
-                        className="relative w-16 h-16 rounded-lg overflow-hidden border border-amber-500/25 shrink-0"
+                        className="relative w-16 h-16 rounded-lg overflow-hidden border border-white/10 shrink-0"
                     >
                         <Image
                             src={`https://ddragon.leagueoflegends.com/cdn/${PATCH_NO}/img/champion/${champ.id}.png`}
                             alt={champ.id}
                             fill
-                            className="object-cover grayscale opacity-50"
+                            className="object-cover grayscale opacity-40"
                         />
-                        <div className="absolute inset-0 bg-amber-950/25" />
-                        <span className="absolute bottom-0.5 right-1 text-[7px] font-black text-amber-400/80 leading-none drop-shadow-[0_1px_1px_rgba(0,0,0,1)]">
+                        <span className="absolute bottom-1 right-1 text-[11px] font-black text-white/70 leading-none drop-shadow-[0_1px_1px_rgba(0,0,0,1)]">
                             G{gameNum}
                         </span>
                     </div>
