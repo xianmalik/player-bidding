@@ -18,6 +18,7 @@ export default function DraftTool() {
   const pageRef = useRef(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isLoadingDraft, setIsLoadingDraft] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState(null);
 
   const {
     user, setUser,
@@ -34,13 +35,25 @@ export default function DraftTool() {
 
   const isReadOnly = Boolean(draftId && user?.id !== draftOwnerId);
 
-  // Auth session listener
+  // Auth session listener + avatar fetch
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
+    const syncUser = async (u) => {
+      setUser(u);
+      if (u) {
+        const { data } = await supabase
+          .from("profiles")
+          .select("avatar_url")
+          .eq("id", u.id)
+          .single();
+        setAvatarUrl(data?.avatar_url ?? null);
+      } else {
+        setAvatarUrl(null);
+      }
+    };
+
+    supabase.auth.getSession().then(({ data: { session } }) => syncUser(session?.user ?? null));
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      syncUser(session?.user ?? null);
     });
     return () => subscription.unsubscribe();
   }, [supabase, setUser]);
@@ -212,6 +225,7 @@ export default function DraftTool() {
         onLoginClick={() => setIsAuthModalOpen(true)}
         draftMode={draftMode}
         setDraftMode={setDraftMode}
+        avatarUrl={avatarUrl}
       />
 
       <div className="max-w-[1800px] mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 pt-8 px-4 md:px-8 pb-12 items-stretch">

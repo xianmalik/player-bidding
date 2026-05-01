@@ -8,6 +8,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'ddragon.leagueoflegends.com',
       },
+      {
+        protocol: 'https',
+        hostname: '*.supabase.co',
+      },
     ],
   },
   async headers() {
@@ -28,7 +32,7 @@ const nextConfig = {
               // unsafe-eval is required by Next.js Fast Refresh in dev; safe to exclude in production
               `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ""}`,
               "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' data: https://ddragon.leagueoflegends.com",
+              "img-src 'self' data: https://ddragon.leagueoflegends.com https://*.supabase.co",
               "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
               "form-action 'self'",
               "frame-ancestors 'none'",

@@ -3,7 +3,7 @@
 import { ChevronDown, LogIn, LogOut, Plus, Settings, Shield, User } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import MyDraftsModal from "./MyDraftsModal";
 
-export default function Header({ user, onLogout, onLoginClick }) {
+export default function Header({ user, onLogout, onLoginClick, avatarUrl }) {
   const [isDraftsModalOpen, setIsDraftsModalOpen] = useState(false);
   return (
     <>
@@ -57,6 +57,7 @@ export default function Header({ user, onLogout, onLoginClick }) {
                       className="h-10 px-2 gap-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-all outline-none"
                     >
                       <Avatar className="w-7 h-7 border border-white/10">
+                        {avatarUrl && <AvatarImage src={avatarUrl} alt="Avatar" />}
                         <AvatarFallback className="bg-amber-400 text-slate-900 font-black text-[10px]">
                           {user.email?.[0].toUpperCase()}
                         </AvatarFallback>
@@ -81,18 +82,14 @@ export default function Header({ user, onLogout, onLoginClick }) {
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator className="bg-white/5 my-2" />
 
-                    <DropdownMenuItem className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-white/5 transition-colors group">
+                    <DropdownMenuItem
+                      onClick={() => (window.location.href = "/profile")}
+                      className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-white/5 transition-colors group"
+                    >
                       <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-all">
                         <User size={16} />
                       </div>
                       <span className="font-bold text-xs uppercase tracking-widest">Profile</span>
-                    </DropdownMenuItem>
-
-                    <DropdownMenuItem className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-white/5 transition-colors group">
-                      <div className="p-2 rounded-lg bg-slate-500/10 text-slate-400 group-hover:bg-slate-500 group-hover:text-white transition-all">
-                        <Settings size={16} />
-                      </div>
-                      <span className="font-bold text-xs uppercase tracking-widest">Settings</span>
                     </DropdownMenuItem>
 
                     <DropdownMenuItem
