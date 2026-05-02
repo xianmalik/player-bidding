@@ -26,7 +26,13 @@ export default function ChampionAvatar({
     let mounted = true;
 
     const loadImage = () => {
-      if (!championName) return;
+      if (!championName) {
+        if (mounted) {
+          setIsLoading(false);
+          setHasError(false);
+        }
+        return;
+      }
 
       // Get image URL directly from store
       const url = getChampionImageUrl(championName);

@@ -43,16 +43,25 @@ const useChampionStore = create(
         }
       },
 
-      getChampionImageUrl: (championName) => {
+      getChampionImageUrl: (identifier) => {
         const { champions, patch } = get();
-        if (!champions || !championName || !patch) return null;
+        if (!champions || !identifier || !patch) return null;
 
+        // 1. Try direct ID lookup (fastest and most accurate for stored drafts)
+        if (champions[identifier]) {
+          return `https://ddragon.leagueoflegends.com/cdn/${patch}/img/champion/${identifier}.png`;
+        }
+
+        // 2. Try case-insensitive name lookup (fallback for legacy or manual data)
         const championKey = Object.keys(champions).find(
-          (key) => champions[key].name.toLowerCase() === championName.toLowerCase()
+          (key) => champions[key].name.toLowerCase() === identifier.toLowerCase()
         );
 
-        if (!championKey) return "/assets/img/champion-placeholder.png";
-        return `https://ddragon.leagueoflegends.com/cdn/${patch}/img/champion/${championKey}.png`;
+        if (championKey) {
+          return `https://ddragon.leagueoflegends.com/cdn/${patch}/img/champion/${championKey}.png`;
+        }
+
+        return null;
       },
 
       preloadChampionImages: async (championNames) => {

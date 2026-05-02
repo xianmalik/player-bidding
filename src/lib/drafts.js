@@ -48,11 +48,11 @@ export function transformDraftsForModal(drafts) {
     }
 
     const blueTeamChamps = (latestGame.blue || [])
-      .filter((champ) => champ?.id)
+      .filter((champ) => champ?.id && typeof champ.id === "string" && champ.id.trim() !== "")
       .map((champ) => champ.id);
 
     const redTeamChamps = (latestGame.red || [])
-      .filter((champ) => champ?.id)
+      .filter((champ) => champ?.id && typeof champ.id === "string" && champ.id.trim() !== "")
       .map((champ) => champ.id);
 
     return {
