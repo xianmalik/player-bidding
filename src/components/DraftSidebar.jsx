@@ -3,11 +3,12 @@
 import Image from "next/image";
 import DraftSlot from "@/components/DraftSlot";
 import EditableTeamName from "@/components/EditableTeamName";
-import { PATCH_NO } from "@/lib/const";
 import useDraftStore from "@/stores/draftStore";
+import useChampionStore from "@/stores/championStore";
 
 function SlotHistory({ side, index, align }) {
   const { games, currentGameIndex, isFearless } = useDraftStore();
+  const { patch } = useChampionStore();
   if (!isFearless || currentGameIndex === 0) return null;
 
   const history = games
@@ -28,7 +29,7 @@ function SlotHistory({ side, index, align }) {
           className="relative w-16 h-16 rounded-lg overflow-hidden border border-white/10 shrink-0"
         >
           <Image
-            src={`https://ddragon.leagueoflegends.com/cdn/${PATCH_NO}/img/champion/${champ.id}.png`}
+            src={`https://ddragon.leagueoflegends.com/cdn/${patch}/img/champion/${champ.id}.png`}
             alt={champ.id}
             fill
             className="object-cover grayscale opacity-40"

@@ -33,7 +33,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useFilteredChampions } from "@/hooks/useFilteredChampions";
 import { useFearlessLocks } from "@/hooks/useFearlessLocks";
-import { DEBOUNCE_MS, PATCH_NO, posList } from "@/lib/const";
+import { DEBOUNCE_MS, posList } from "@/lib/const";
 import useChampionStore from "@/stores/championStore";
 import useDraftStore from "@/stores/draftStore";
 import GameTabs from "@/components/GameTabs";
@@ -58,7 +58,7 @@ export default function ChampionPool({ onSave, onDownload, onReset }) {
     selectChamp,
     addNextGame,
   } = useDraftStore();
-  const { champions } = useChampionStore();
+  const { champions, patch } = useChampionStore();
 
   const isReadOnly = Boolean(draftId && user?.id !== draftOwnerId);
   const currentGame = games[currentGameIndex];
@@ -287,7 +287,7 @@ export default function ChampionPool({ onSave, onDownload, onReset }) {
                         : "border-white/5 hover:border-amber-400/50 hover:shadow-[0_0_30px_rgba(251,191,36,0.2)] hover:-translate-y-1"}`}
                   >
                     <Image
-                      src={`https://ddragon.leagueoflegends.com/cdn/${PATCH_NO}/img/champion/${champ.id}.png`}
+                      src={`https://ddragon.leagueoflegends.com/cdn/${patch}/img/champion/${champ.id}.png`}
                       alt={champ.name}
                       fill
                       className={`object-cover transition-transform duration-700 group-hover:scale-110 ${isUnavailable ? "grayscale opacity-30" : ""}`}

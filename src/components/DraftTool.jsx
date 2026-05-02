@@ -31,7 +31,7 @@ export default function DraftTool() {
     loadDraftData, resetDraft,
   } = useDraftStore();
 
-  const { fetchChampions } = useChampionStore();
+  const { syncPatch } = useChampionStore();
 
   const isReadOnly = Boolean(draftId && user?.id !== draftOwnerId);
 
@@ -58,12 +58,12 @@ export default function DraftTool() {
     return () => subscription.unsubscribe();
   }, [supabase, setUser]);
 
-  // Load champions via store (cached)
+  // Sync patch on mount: uses cached champions immediately, re-fetches if patch changed
   useEffect(() => {
-    fetchChampions().catch(() => {
+    syncPatch().catch(() => {
       toast.error("Failed to load champions. Please refresh.");
     });
-  }, [fetchChampions]);
+  }, [syncPatch]);
 
   // Load draft from ?draft= URL param
   useEffect(() => {

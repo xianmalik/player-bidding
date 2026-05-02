@@ -1,11 +1,23 @@
 import championRoles from "@/lib/championRoles";
-import { CHAMPION_FIELD_LIMITS, PATCH_NO } from "@/lib/const";
+import { CHAMPION_FIELD_LIMITS } from "@/lib/const";
 
 export const revalidate = 86400;
 
 export async function GET() {
+  const versionsRes = await fetch(
+    "https://ddragon.leagueoflegends.com/api/versions.json",
+    { next: { revalidate: 86400 } }
+  );
+
+  if (!versionsRes.ok) {
+    return Response.json({ error: "Failed to fetch version data" }, { status: 502 });
+  }
+
+  const versions = await versionsRes.json();
+  const latestPatch = versions[0];
+
   const res = await fetch(
-    `https://ddragon.leagueoflegends.com/cdn/${PATCH_NO}/data/en_US/champion.json`,
+    `https://ddragon.leagueoflegends.com/cdn/${latestPatch}/data/en_US/champion.json`,
     { next: { revalidate: 86400 } }
   );
 

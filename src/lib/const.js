@@ -20,8 +20,6 @@ const posList = [
   { name: "Support", value: "sp", img: "/assets/img/pos/sp.svg" },
 ];
 
-const PATCH_NO = "16.8.1";
-
 export const DRAFT_LIMITS = {
   TEAM_NAME_MAX: 64,
   DRAFT_NAME_MAX: 128,
@@ -48,4 +46,4 @@ export const CHAMPION_FIELD_LIMITS = {
   IMAGE_URL: 128,
 };
 
-export { PATCH_NO, posList, rankList };
+export { posList, rankList };

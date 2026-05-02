@@ -3,7 +3,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Ban, User, X } from "lucide-react";
 import Image from "next/image";
-import { PATCH_NO } from "@/lib/const";
 import useDraftStore from "@/stores/draftStore";
 import useChampionStore from "@/stores/championStore";
 
@@ -14,7 +13,7 @@ export default function DraftSlot({ side, index, type = "pick", displayAs }) {
     setCurrentSide, setCurrentSelection,
     removeChamp, selectChamp, swapSlots, setCurrentGame,
   } = useDraftStore();
-  const { champions } = useChampionStore();
+  const { champions, patch } = useChampionStore();
 
   const isReadOnly = Boolean(draftId && user?.id !== draftOwnerId);
   const currentGame = games[currentGameIndex];
@@ -25,7 +24,7 @@ export default function DraftSlot({ side, index, type = "pick", displayAs }) {
 
   const imageUrl = data
     ? isBan
-      ? `https://ddragon.leagueoflegends.com/cdn/${PATCH_NO}/img/champion/${data.id}.png`
+      ? `https://ddragon.leagueoflegends.com/cdn/${patch}/img/champion/${data.id}.png`
       : `https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${data.id}_0.jpg`
     : null;
 
