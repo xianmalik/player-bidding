@@ -6,10 +6,6 @@ import {
   Check,
   ChevronRight,
   Command,
-  Download,
-  Globe,
-  Link2,
-  Lock,
   RotateCcw,
   Save,
   Search,
@@ -28,12 +24,12 @@ import { DEBOUNCE_MS, posList } from "@/lib/const";
 import useChampionStore from "@/stores/championStore";
 import useDraftStore from "@/stores/draftStore";
 import GameTabs from "@/components/GameTabs";
+import DraftSettingsModal from "@/components/DraftSettingsModal";
 
 export default function ChampionPool({ onSave, onDownload, onReset }) {
   const [inputValue, setInputValue] = useState("");
   const [selectedRole, setSelectedRole] = useState(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [linkCopied, setLinkCopied] = useState(false);
   const searchInputRef = useRef(null);
   const searchTerm = useDebounce(inputValue, DEBOUNCE_MS.SEARCH);
 
@@ -41,13 +37,11 @@ export default function ChampionPool({ onSave, onDownload, onReset }) {
     games,
     currentGameIndex,
     isFearless,
-    isPublic,
     currentSide,
     currentSelection,
     user,
     draftId,
     draftOwnerId,
-    setIsPublic,
     selectChamp,
     addNextGame,
   } = useDraftStore();
@@ -271,123 +265,11 @@ export default function ChampionPool({ onSave, onDownload, onReset }) {
         )}
 
       {/* Settings Modal */}
-      <AnimatePresence>
-        {isSettingsOpen && (
-          <>
-            <motion.div
-              key="settings-backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsSettingsOpen(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200]"
-            />
-            <motion.div
-              key="settings-panel"
-              initial={{ opacity: 0, scale: 0.95, y: -8 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: -8 }}
-              transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              className="fixed inset-0 flex items-center justify-center z-[201] pointer-events-none"
-            >
-              <div className="pointer-events-auto w-full max-w-sm mx-4 bg-slate-900/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-[0_24px_80px_rgba(0,0,0,0.7)] overflow-hidden">
-                {/* Header */}
-                <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-xl bg-white/5 text-white/60">
-                      <Settings size={16} />
-                    </div>
-                    <h2 className="text-sm font-black uppercase tracking-widest text-white">
-                      Draft Settings
-                    </h2>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setIsSettingsOpen(false)}
-                    className="p-1.5 rounded-lg text-white/30 hover:text-white hover:bg-white/10 transition-all"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-
-                {/* Body */}
-                <div className="p-4 space-y-4">
-                  {!isReadOnly && (
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-white/20 mb-2">
-                        Visibility
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => setIsPublic(!isPublic)}
-                        className="w-full flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/8 transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className={`p-2 rounded-lg transition-all ${isPublic ? "bg-emerald-500/10 text-emerald-400" : "bg-amber-500/10 text-amber-400"}`}>
-                            {isPublic ? <Globe size={16} /> : <Lock size={16} />}
-                          </div>
-                          <span className="font-bold text-xs uppercase tracking-widest text-white">
-                            {isPublic ? "Public" : "Private"}
-                          </span>
-                        </div>
-                        <div className={`w-9 h-5 rounded-full transition-colors relative ${isPublic ? "bg-emerald-500" : "bg-slate-700"}`}>
-                          <div className={`absolute top-1 h-3 w-3 rounded-full bg-white transition-all ${isPublic ? "left-[22px]" : "left-1"}`} />
-                        </div>
-                      </button>
-                    </div>
-                  )}
-
-                  <div className="border-t border-white/5" />
-
-                  {/* Copy Link */}
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-white/20 mb-2">
-                      Share Link
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <input
-                        readOnly
-                        value={typeof window !== "undefined" ? window.location.href : ""}
-                        className="flex-1 h-11 bg-black/40 border border-white/10 rounded-xl px-3 text-xs text-white/50 font-mono focus:outline-none truncate"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          navigator.clipboard.writeText(window.location.href);
-                          setLinkCopied(true);
-                          setTimeout(() => setLinkCopied(false), 2000);
-                        }}
-                        className={`shrink-0 h-11 px-4 rounded-xl border text-xs font-black uppercase tracking-widest transition-all ${
-                          linkCopied
-                            ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-400"
-                            : "bg-white/5 border-white/10 text-white/60 hover:bg-white/10 hover:text-white"
-                        }`}
-                      >
-                        <span className="flex items-center gap-1.5">
-                          {linkCopied ? <Check size={13} strokeWidth={3} /> : <Link2 size={13} />}
-                          {linkCopied ? "Copied" : "Copy"}
-                        </span>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="border-t border-white/5" />
-
-                  {/* Download PNG */}
-                  <button
-                    type="button"
-                    onClick={() => { onDownload(); setIsSettingsOpen(false); }}
-                    className="w-full h-11 flex items-center justify-center gap-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-900 font-black text-xs uppercase tracking-widest transition-colors"
-                  >
-                    <Download size={15} strokeWidth={3} />
-                    Download PNG
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      <DraftSettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        onDownload={onDownload}
+      />
     </div>
   );
 }
