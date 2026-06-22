@@ -11,5 +11,8 @@ export async function GET() {
   }
 
   const versions = await res.json();
-  return Response.json({ patch: versions[0] });
+  return Response.json(
+    { patch: versions[0] },
+    { headers: { "Cache-Control": "public, max-age=86400, stale-while-revalidate=3600" } }
+  );
 }

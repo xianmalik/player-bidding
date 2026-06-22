@@ -1,6 +1,5 @@
 "use client";
 
-import html2canvas from "html2canvas";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import AuthModal from "@/components/AuthModal";
@@ -167,6 +166,7 @@ export default function DraftTool() {
   };
 
   const handleDownload = async () => {
+    const { default: html2canvas } = await import("html2canvas");
     const canvas = await html2canvas(pageRef.current, {
       useCORS: true,
       allowTaint: false,
