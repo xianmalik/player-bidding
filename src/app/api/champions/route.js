@@ -1,12 +1,12 @@
 import championRoles from "@/lib/championRoles";
 import { CHAMPION_FIELD_LIMITS } from "@/lib/const";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 export async function GET() {
   const versionsRes = await fetch(
     "https://ddragon.leagueoflegends.com/api/versions.json",
-    { next: { revalidate: 3600 } }
+    { next: { revalidate: 86400 } }
   );
 
   if (!versionsRes.ok) {
@@ -42,6 +42,6 @@ export async function GET() {
   );
 
   return Response.json(data, {
-    headers: { "Cache-Control": "public, max-age=3600, stale-while-revalidate=300" },
+    headers: { "Cache-Control": "public, max-age=86400, stale-while-revalidate=3600" },
   });
 }
