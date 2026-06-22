@@ -2,7 +2,7 @@
 const nextConfig = {
   poweredByHeader: false,
   images: {
-    unoptimized: true,
+    minimumCacheTTL: 604800,
     remotePatterns: [
       {
         protocol: 'https',

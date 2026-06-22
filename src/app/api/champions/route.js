@@ -41,5 +41,7 @@ export async function GET() {
     ])
   );
 
-  return Response.json(data);
+  return Response.json(data, {
+    headers: { "Cache-Control": "public, max-age=86400, stale-while-revalidate=3600" },
+  });
 }

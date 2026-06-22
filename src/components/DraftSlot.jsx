@@ -78,13 +78,16 @@ export default function DraftSlot({ side, index, type = "pick", displayAs }) {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            style={{
-              backgroundImage: `url(${imageUrl})`,
-              backgroundSize: "cover",
-              backgroundPosition: isBan ? "center" : "center 20%",
-            }}
-            className="w-full h-full transition-transform duration-700 group-hover:scale-110"
-          />
+            className="relative w-full h-full transition-transform duration-700 group-hover:scale-110"
+          >
+            <Image
+              src={imageUrl}
+              alt={data.name || data.id}
+              fill
+              sizes={isBan ? "64px" : "(max-width: 768px) 50vw, 300px"}
+              className={`object-cover ${isBan ? "object-center" : "object-[center_20%]"}`}
+            />
+          </motion.div>
           {!isBan && (
             <div
               className={`absolute inset-0 bg-gradient-to-t ${
