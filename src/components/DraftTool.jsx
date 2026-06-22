@@ -20,14 +20,22 @@ export default function DraftTool() {
   const [avatarUrl, setAvatarUrl] = useState(null);
 
   const {
-    user, setUser,
-    draftId, setDraftId,
-    draftOwnerId, setDraftOwnerId,
+    user,
+    setUser,
+    draftId,
+    setDraftId,
+    draftOwnerId,
+    setDraftOwnerId,
     isPublic,
-    games, currentGameIndex, isFearless,
-    blueTeamName, redTeamName,
-    draftMode, setDraftMode,
-    loadDraftData, resetDraft,
+    games,
+    currentGameIndex,
+    isFearless,
+    blueTeamName,
+    redTeamName,
+    draftMode,
+    setDraftMode,
+    loadDraftData,
+    resetDraft,
   } = useDraftStore();
 
   const { syncPatch } = useChampionStore();
@@ -51,7 +59,9 @@ export default function DraftTool() {
     };
 
     supabase.auth.getSession().then(({ data: { session } }) => syncUser(session?.user ?? null));
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       syncUser(session?.user ?? null);
     });
     return () => subscription.unsubscribe();
@@ -120,7 +130,7 @@ export default function DraftTool() {
       return;
     }
 
-    const stripChamp = (c) => (c ? { id: c.id, key: c.key } : null);
+    const stripChamp = (c) => (c ? { id: c.id } : null);
     const minimalDraftData = {
       isFearless,
       blueTeamName,
@@ -150,7 +160,9 @@ export default function DraftTool() {
     } else {
       const { data, error } = await supabase
         .from("drafts")
-        .insert([{ user_id: user.id, draft_data: minimalDraftData, name: seriesName, is_public: isPublic }])
+        .insert([
+          { user_id: user.id, draft_data: minimalDraftData, name: seriesName, is_public: isPublic },
+        ])
         .select()
         .single();
 
@@ -230,11 +242,7 @@ export default function DraftTool() {
 
       <div className="max-w-[1800px] mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 pt-8 px-4 md:px-8 pb-12 items-stretch">
         <DraftSidebar side="blue" />
-        <ChampionPool
-          onSave={handleSaveDraft}
-          onDownload={handleDownload}
-          onReset={resetDraft}
-        />
+        <ChampionPool onSave={handleSaveDraft} onDownload={handleDownload} onReset={resetDraft} />
         <DraftSidebar side="red" />
       </div>
 
