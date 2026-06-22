@@ -32,6 +32,7 @@ function SlotHistory({ side, index, align }) {
             src={`https://ddragon.leagueoflegends.com/cdn/${patch}/img/champion/${champ.id}.png`}
             alt={champ.id}
             fill
+            sizes="64px"
             className="object-cover grayscale opacity-40"
           />
           <span className="absolute bottom-1 right-1 text-[11px] font-black text-white/70 leading-none drop-shadow-[0_1px_1px_rgba(0,0,0,1)]">

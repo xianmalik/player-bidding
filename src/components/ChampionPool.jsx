@@ -207,6 +207,7 @@ export default function ChampionPool({ onSave, onDownload, onReset }) {
                       src={`https://ddragon.leagueoflegends.com/cdn/${patch}/img/champion/${champ.id}.png`}
                       alt={champ.name}
                       fill
+                      sizes="(max-width: 640px) 22vw, (max-width: 1280px) 15vw, 10vw"
                       className={`object-cover transition-transform duration-700 group-hover:scale-110 ${isUnavailable ? "grayscale opacity-30" : ""}`}
                     />
 
