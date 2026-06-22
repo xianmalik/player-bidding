@@ -1,10 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Calendar, Clock, Globe, Lock, Search, Swords } from "lucide-react";
+import { Calendar, Clock, Globe, Lock, Search, Swords, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { getUserDrafts, transformDraftsForModal } from "../lib/drafts";
+import { toast } from "sonner";
 import { formatDate, formatTime } from "../lib/dateUtils";
+import { deleteDraft, getUserDrafts, transformDraftsForModal } from "../lib/drafts";
 import useChampionStore from "../stores/championStore";
 import ChampionAvatar from "./ChampionAvatar";
 import { Input } from "./ui/input";
@@ -15,6 +16,8 @@ export default function MyDraftsModal({ isOpen, onClose, user }) {
   const [drafts, setDrafts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
   const { champions, preloadChampionImages } = useChampionStore();
 
   const fetchUserDrafts = useCallback(async () => {
@@ -43,8 +46,32 @@ export default function MyDraftsModal({ isOpen, onClose, user }) {
   useEffect(() => {
     if (isOpen && user?.id) {
       fetchUserDrafts();
+    } else if (!isOpen) {
+      setConfirmDeleteId(null);
     }
   }, [isOpen, user?.id, fetchUserDrafts]);
+
+  const handleDeleteDraft = async (e, draftId) => {
+    e.stopPropagation();
+
+    if (confirmDeleteId !== draftId) {
+      setConfirmDeleteId(draftId);
+      return;
+    }
+
+    setDeletingId(draftId);
+    const { error } = await deleteDraft(draftId, user.id);
+    setDeletingId(null);
+    setConfirmDeleteId(null);
+
+    if (error) {
+      toast.error("Failed to delete draft.");
+      return;
+    }
+
+    setDrafts((prev) => prev.filter((d) => d.id !== draftId));
+    toast.success("Draft deleted.");
+  };
 
   const filteredDrafts = useMemo(() => {
     if (!searchQuery) return drafts;
@@ -166,6 +193,24 @@ export default function MyDraftsModal({ isOpen, onClose, user }) {
                         <span className="text-[8px] font-medium">PRIVATE</span>
                       </div>
                     )}
+                    <button
+                      type="button"
+                      disabled={deletingId === draft.id}
+                      onClick={(e) => handleDeleteDraft(e, draft.id)}
+                      title="Delete draft"
+                      className={`flex items-center gap-1 px-2 py-1 rounded transition-colors disabled:opacity-50 ${
+                        confirmDeleteId === draft.id
+                          ? "bg-red-500 text-white"
+                          : "bg-white/5 text-white/30 hover:bg-red-500/10 hover:text-red-400"
+                      }`}
+                    >
+                      <Trash2 size={10} />
+                      {confirmDeleteId === draft.id && (
+                        <span className="text-[8px] font-black uppercase tracking-wider">
+                          {deletingId === draft.id ? "..." : "Confirm?"}
+                        </span>
+                      )}
+                    </button>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 text-[10px] text-white/40">

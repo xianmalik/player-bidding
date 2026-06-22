@@ -25,7 +25,19 @@ export const DRAFT_LIMITS = {
   DRAFT_NAME_MAX: 128,
   GAMES_MAX: 7,
   SLOTS_PER_SIDE: 5,
+  USER_DRAFTS_MAX: 100,
 };
+
+// Resolves the deployed site origin for absolute URLs (metadata, sitemap, robots).
+// Falls back through Vercel's auto-injected env vars, then localhost for dev.
+export function getSiteUrl() {
+  if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL;
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  }
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return "http://localhost:3000";
+}
 
 export const CANVAS = {
   WIDTH: 1920,
